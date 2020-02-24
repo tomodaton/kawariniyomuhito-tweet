@@ -58,12 +58,11 @@
     <h2>{{date}}</h2>
       % for group in groups[date]:
       <div class="tweet-group-container" id="tweet-group-{{group['gid']}}">
-        <span id="tweet-group-settings-form-{{group['gid']}}"> 開始時刻<input type="time" name="time" value="{{group['sched_start_date']}}"> 状態 <select name="status" value="{{group['status']}}"><option>DRAFT</option><option>SCHEDULED</option></select> <button id="tweet-group-settings-form-{{group['gid']}}-btn">確定</button></span>
-        <span id="tweet-group-settings-form-{{group['gid']}}-confirmed">開始時刻 <span id="tweet-group-settings-form-{{group['gid']}}-confirmed-time">{{group['sched_start_date']}}</span>
-            状態 <span id="tweet-group-settings-form-{{group['gid']}}-confirmed-status">{{group['status']}}</span></span> <span id="btn-edit-tweet-group-{{group['gid']}}">[Edit]</span>[Remove]
+        <span id="tweet-group-settings-form-{{group['gid']}}"> 開始時刻<input type="datetime" name="time" value="{{group['sched_start_date']}}"> 間隔 <input type="integer" name="interval" value="{{group['interval']}}"> 状態 <select name="status" value="{{group['status']}}"><option>DRAFT</option><option>SCHEDULED</option></select> <span id="tweet-group-settings-form-{{group['gid']}}-btn">[S]</span></span>
+        <span id="tweet-group-settings-form-{{group['gid']}}-confirmed">開始時刻 <span id="tweet-group-settings-form-{{group['gid']}}-confirmed-time">{{group['sched_start_date']}}</span> 間隔 <span id="tweet-group-settings-form-{{group['gid']}}-confirmed-interval">{{group['interval']}}</span> 状態 <span id="tweet-group-settings-form-{{group['gid']}}-confirmed-status">{{group['status']}}</span></span> <span id="btn-edit-tweet-group-{{group['gid']}}">[E]</span>[R]
         % for tweet in tweets[group['gid']]:
           <div class="tweet" id="tweet-{{tweet['id']}}">
-          <div class="tweet-footer">{{tweet['subid']}}: {{tweet['status']}} [Edit][Remove]</div>
+          <div class="tweet-footer">{{tweet['subid']}}: {{tweet['status']}} [S][R]</div>
           <div class="tweet-text" contenteditable="True">{{tweet['text']}}</div>
           </div>
         % end
@@ -75,13 +74,12 @@
     % end
 </article>
 <script>
+  var loc_tweet_id = 0;
+  var loc_tweet_group_id = 0;
   % for date in dates:
     $("#add-tweet-group-btn-{{date}}").click(function(){
-      var gid_new = 0; var sched_start_date_new = '1978-10-03 00:00:00'; var status_new = 'DRAFT';
-      var tweet_group_new = '<div class="tweet-group-container" id="tweet-group-' + gid_new + '"> <span id="tweet-group-settings-form-' + gid_new +'"> 開始時刻 <input type="time" name="time" value="' + sched_start_date_new + '"> 状態 <select name="status" value="' + status_new + '"><option>DRAFT</option><option>SCHEDULED</option></select> <button id="tweet-group-settings-form-' + gid_new + '-btn">確定</button></span> <span id="tweet-group-settings-form-' + gid_new + '-confirmed">開始時刻 <span id="tweet-group-settings-form-' + gid_new + '-confirmed-time">' + sched_start_date_new +'</span> 状態 <span id="tweet-group-settings-form-' + gid_new + '-confirmed-status">' +status_new+ '</span></span> <span id="btn-edit-tweet-group-' +gid_new+ '">[Edit]</span>[Remove]</div>'
-      $("#add-tweet-group-btn-{{date}}").prepend(tweet_group_new)
-
-
+      var html_l = '<div class="tweet-group-container">ほげほげ</div>'
+      $(html_l).insertBefore("#add-tweet-group-btn-{{date}}")
     })
     % for group in groups[date]:
       $("#btn-edit-tweet-group-{{group['gid']}}").click(
@@ -93,14 +91,17 @@
         function(){
           time_l = $('#tweet-group-settings-form-{{group['gid']}} [name=time]').val()
           status_l = $('#tweet-group-settings-form-{{group['gid']}} [name=status]').val()
+          interval_l = $('#tweet-group-settings-form-{{group['gid']}} [name=interval]').val()
           $("#tweet-group-settings-form-{{group['gid']}}-confirmed-time").html(time_l)
           $("#tweet-group-settings-form-{{group['gid']}}-confirmed-status").html(status_l)
+          $("#tweet-group-settings-form-{{group['gid']}}-confirmed-interval").html(interval_l)
           $("#tweet-group-settings-form-{{group['gid']}}").css("display", "none");
           $("#tweet-group-settings-form-{{group['gid']}}-confirmed").css("display", "inline");
           var send_vals = {}
           send_vals.gid = {{group['gid']}}
           send_vals.sched_start_date = time_l
           send_vals.status = status_l
+          send_vals.interval = interval_l
           $.ajax({
               url:'api/1.0/update_tweet_group.json',
               type:'POST',
@@ -110,21 +111,21 @@
               datatype: 'json'
           })
           .done(function(){
-              alert("done")
+              pass
+          })
+          .fail(function(){
+              alert("Failed.")
           })
         }
       )
       $("#add-tweet-btn-{{group['gid']}}").click(function(){
-        $("#add-tweet-btn-{{group['gid']}}").before('<div class="tweet"><p class="tweet-text" contenteditable="True"></p><p><span class="tweet-footer">: [Edit][Remove]</span></p></div>');
+        const html_l = 
+              '<div class="tweet" id="local-tweet-id-' + loc_tweet_id + '">' +
+              '<div class="tweet-footer">' + loc_tweet_id + ' : DRAFT [S][R]</div>' +
+              '<div class="tweet-text" contenteditable="True"></div> </div>';
+        $("#add-tweet-btn-{{group['gid']}}").before(html_l);
+        loc_tweet_id++
       })
-
-      % for tweet in tweets[group['gid']]:
-        $("#tweet-{{tweet['id']}}").click(
-          function(){
-            $("#tweet-3").find(".tweet-text").css("contenteditable", "False")
-          }
-        )
-      % end
     % end
   % end
 </script>

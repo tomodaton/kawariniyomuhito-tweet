@@ -28,7 +28,9 @@ def close_db(conn):
 
 # Tweet Group操作
 def add_group(cursor, sched_start_date, interval):
-    cursor.execute("INSERT INTO sched_tweet_groups(sched_start_date,interval,actual_start_date,status) VALUES (?, ?,'2099-12-31 23:59', 'DRAFT')", (sched_start_date, interval))
+    # import pdb; pdb.set_trace()
+    result = cursor.execute("INSERT INTO sched_tweet_groups(sched_start_date,interval,actual_start_date,status) VALUES (?, ?,'2099-12-31 23:59', 'DRAFT')", (sched_start_date, interval)).lastrowid
+    return result;
 
 def search_group_by_date(cursor, date):
     # cursor.execute("SELECT * FROM sched_tweet_groups WHERE sched_start_date >= datetime(date(?)", from_date, to_date);
@@ -45,17 +47,24 @@ def search_group_by_gid():
     skip
 
 def del_group(cursor, gid):
-    cursor.execute("DELETE FROM sched_tweet_groups WHERE gid=?", gid)
+    cursor.execute("DELETE FROM sched_tweet_groups WHERE gid=?", (gid,))
 
 def confirm_group(cursor, gid):
-    cursor.execute("UPDATE sched_tweet_groups SET status = 'SCHED' WHERE gid = ?", (gid,))
+    cursor.execute("UPDATE sched_tweet_groups SET status = 'SCHEDULED' WHERE gid = ?", (gid,))
 
 # Tweet操作
 def add_tweet(cursor, gid, subid, text):
-    cursor.execute("INSERT INTO sched_tweets(gid, subid, text, tweet_id, actual_date, status) VALUES (?, ?, ?, 1, 1, 'DRAFT')", (gid, subid, text))
+    result = cursor.execute("INSERT INTO sched_tweets(gid, subid, text, tweet_id, actual_date, status) VALUES (?, ?, ?, 1, 1, 'DRAFT')", (gid, subid, text)).lastrowid
+    return result
 
+def update_tweet(cursor, id, text):
+    cursor.execute("UPDATE sched_tweets SET text = ? WHERE id = ?", (id, text))
+
+def update_tweet_status(cursor, id, tweet_id, status):
+    cursor.execute("UPDATE sched_tweets SET status = ?, tweet_id = ? WHERE id = ?", (status, tweet_id, id))
+    
 def del_tweet(cursor, id):
-    cursor.execute("DELETE FROM sched_tweets WHERE id=?", id)
+    cursor.execute("DELETE FROM sched_tweets WHERE id=?", (id,))
 
 def search_tweets_by_date(conn, cursor, date):
     cursor.execute("SELECT sched_tweet_groups.gid, sched_tweet_groups.sched_start_date, sched_tweet_groups.interval, sched_tweet_groups.status, sched_tweets.id, sched_tweets.subid, sched_tweets.text FROM sched_tweet_groups INNER JOIN sched_tweets ON sched_tweet_groups.gid = sched_tweets.gid WHERE sched_tweet_groups.sched_start_date <= ?" , (date,))
@@ -66,6 +75,7 @@ def search_tweets_by_date(conn, cursor, date):
     return result
 
 def search_tweets_by_gid(cursor, gid):
+    # import pdb; pdb.set_trace()
     cursor.execute("SELECT * FROM sched_tweets WHERE gid = ?", (gid, ));
     result = cursor.fetchall()
     tweets = []
@@ -73,32 +83,34 @@ def search_tweets_by_gid(cursor, gid):
         tweets.append(dict(row)) 
     return tweets
 
-
 # 日付を指定して予約後のツイートを抽出（自動tweetプログラム側から呼び出し）
-def list_sched_tweets(conn, cursor, date):
-    cursor.execute("SELECT sched_tweet_groups.gid, sched_tweet_groups.sched_start_date, sched_tweet_groups.interval, sched_tweet_groups.status, sched_tweets.id, sched_tweets.subid, sched_tweets.text FROM sched_tweet_groups INNER JOIN sched_tweets ON sched_tweet_groups.gid = sched_tweets.gid WHERE sched_tweet_groups.sched_start_date <= ? AND sched_tweet_groups.status = 'SCHED'" , (date,))
+def list_sched_tweets(conn, cursor, datetime_s):
+    cursor.execute("SELECT sched_tweet_groups.gid, sched_tweet_groups.sched_start_date, sched_tweet_groups.interval, sched_tweet_groups.status, sched_tweets.id, sched_tweets.subid, sched_tweets.text FROM sched_tweet_groups INNER JOIN sched_tweets ON sched_tweet_groups.gid = sched_tweets.gid WHERE sched_tweet_groups.sched_start_date <= ? AND sched_tweet_groups.status = 'SCHED'" , (datetime_s,))
     # import pdb; pdb.set_trace()
     result = cursor.fetchall()
     # for row in result:
     #     print(json.dumps(dict(row)))
     return result
 
+def search_scheduled_tweet_groups(conn, cursor, datetime_s):
+    cursor.execute("SELECT gid FROM sched_tweet_groups WHERE sched_start_date <= ? AND status = 'SCHEDULED'", (datetime_s,))
+    result = cursor.fetchall()
+    return result
+
 # For API
 # Tweet Group更新
-def update_tweet_group(conn, cursor, gid, sched_start_date, status):
-    cursor.execute("UPDATE sched_tweet_groups SET sched_start_date=?, status=? WHERE gid=?", (sched_start_date, status, gid))
+def update_tweet_group(conn, cursor, gid, sched_start_date, interval, status):
+    cursor.execute("UPDATE sched_tweet_groups SET sched_start_date=?, status=?, interval=? WHERE gid=?", (sched_start_date, status, interval, gid))
     commit(conn)
     return 200;
-def add_tweet_group(conn, cursor, sched_start_date, status):
-    
-def delete_tweet_group():
 
-    
-def add_tweet():
-    
-def update_tweet():
+def update_tweet_group_status(conn, cursor, gid, status):
+    cursor.execute("UPDATE sched_tweet_groups SET status=? WHERE gid=?", (status, gid))
+    commit(conn)
 
-def delete_tweet()
+def add_tweet_group(cursor, sched_start_date, status):
+    result = add_group(cursor, sched_start_date, status)
+    return result
 
 
 # CUI実行時
@@ -122,7 +134,8 @@ if __name__ == '__main__':
                 print(item)
         elif mode == '11': # Tweet Group追加
             sched_start_date = input('Start Date>>')
-            add_group(cursor, sched_start_date, 1)
+            result = add_group(cursor, sched_start_date, 1)
+            print(result)
             conn.commit()
         elif mode == '12': # Tweet Group一覧取得
             cursor.execute("SELECT * FROM sched_tweet_groups")
@@ -136,8 +149,9 @@ if __name__ == '__main__':
         elif mode == '14': # Tweet Group更新
             gid = input('gid >>')
             sched_start_date = input('sched_start_date >>')
+            interval = input('interval >>')
             status = input('status >>')
-            update_tweet_group(conn, cursor, gid, sched_start_date, status)
+            update_tweet_group(conn, cursor, gid, sched_start_date, interval, status)
         elif mode == '19': # Tweet Group削除
             gid = input('gid >>')
             del_group(cursor, gid)

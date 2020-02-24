@@ -22,7 +22,8 @@ def retweet(tweetId):
     url = url_retweet_base + "%s.json"%tweetId
     res = twitter.post(url)
     print(res)
-
+    return res
+    
 def unretweet(tweetId):
     url = url_unretweet_base + "%s.json"%tweetId
     res = twitter.post(url)
@@ -49,7 +50,7 @@ def post_tweet(twitter, tweet):
         print("Success")
     else:
         print("Failed. :  %d" % res.status_code)
-    return res.status_code
+    return res
         
 def cancel_tweet(tweetId):
     url = url_canceltweet_base + "%s.json"%tweetId
