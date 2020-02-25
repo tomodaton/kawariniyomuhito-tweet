@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+<title>Test</title>
+</head>
+<body>
+<div class="container">
+<div class="jumbotron jumbotron-fluid text-center" style="background-color: darkblue; color:#FFF;">
+    <h1>代わりに読む人</h1>
+    <p>Tweet Manager v0.0</p>
+    <form class="form-inline justify-content-center" action="./top.html" method="get">
+        <input type="date" name="from_date" class="form-control" value="2020-02-24" size="10">-<input type="date" class="form-control" name ="to_date" value="2020-02-27" size="10">
+        &nbsp; <button class="btn btn-primary">View</button>
+    </form>
+</div>
+<h2 class="text-primary">Tweet管理</h2>
+<div class="row bg-white">
+    <div class="col-sm-3 my-2 border-danger">
+        <h4 class="text-secondary">2020-02-25</h4>
+        <div class="my-2">
+            <h5 class="text-secondary">Tweet Group</h5>
+            <div class="p-2 border outline-secondary  rounded set-tweet-group tweet-group-settings d-none">
+                <div class="mb-1">Start: <input type="time" class="form-control form-control-sm" value="20:00" size="5"></div>
+                <div class="my-1">Interval: <input type="integer" class="form-control form-control-sm" value="60" size="3"></div>
+                <select class="form-control form-control-sm my-1"><option>DRAFT</option><option>SCHEDULED</option></select>
+                <div class="text-right"><button class="btn btn-sm btn-secondary small">Set</button></div>
+            </div>
+            <div class="p-2 small border outline-secondary rounded tweet-group-settings-confirmed d-block">
+                <div class="mb-1">Start: 20:00:00</div>
+                <div class="my-1">Interval(sec): 60</div>
+                <div class="">Status: SCHEDULED</div>
+                <div class="text-right"><button class="btn btn-sm btn-secondary small edit-tweet-group">Edit</button></div>
+            </div>
+            <div class="card my-1">
+                <div class="card-header text-right small"><button class="btn btn-sm btn-outline-secondary save-tweet">Save</button> <button class="btn btn-sm btn-outline-secondary del-tweet">Delete</button></div>
+                <div class="card-body">
+                    <p class="card-text text-dark">『百年の孤独』を代わりに読むを売る。お取り扱いいただいている書店はリンクをご覧ください。</p>
+                </div>
+            </div>
+            <div class="card my-1">
+                <div class="card-header text-right small"><button class="btn btn-sm btn-outline-secondary save-tweet">Save</button> <button class="btn btn-sm btn-outline-secondary del-tweet">Delete</button></div>
+                <div class="card-body">
+                    <p class="card-text text-dark">『パリのガイドブックで東京の町を闊歩する』（代わりに読む人）好評発売中です。お取り扱いいただいている書店はリンクをご覧ください。https://www.kawariniyomuhito.com/paris_tokyo1.html</p>
+                </div>
+            </div>
+            <div class="card my-1">
+                <div class="card-header text-right small"><button class="btn btn-sm btn-outline-secondary save-tweet">Save</button> <button class="btn btn-sm btn-outline-secondary del-tweet">Delete</button></div>
+                <div class="card-body">
+                    <p class="card-text text-dark">『ランバダ』で話題のわかしょ文庫さんのWEB連載「うろん紀行」もぜひお読みください。</p>
+                </div>
+            </div>
+            <div class="border outline-secondary rounded text-center text-secondary add-tweet">+</div>
+        </div>
+        <div>
+            <h5 class="text-secondary">Tweet Group</h5>
+            <div class="p-2 border outline-secondary  rounded d-none set-tweet-group my-1">
+                <div class="mb-1">Start: <input type="time" class="form-control form-control-sm" value="20:00" size="5"></div>
+                <div class="my-1">Interval: <input type="integer" class="form-control form-control-sm" value="60" size="3"></div>
+                <select class="form-control form-control-sm my-1"><option>DRAFT</option><option>SCHEDULED</option></select>
+                <div class="text-right"><button class="btn btn-sm btn-secondary small">Set</button></div>
+            </div>
+            <div class="p-2 small border outline-secondary rounded my-1">
+                <div class="mb-1">Start: 20:00:00</div>
+                <div class="my-1">Interval(sec): 60</div>
+                <div class="">Status: SCHEDULED</div>
+                <div class="text-right"><button class="btn btn-sm btn-secondary small edit-tweet-group">Edit</button></div>
+            </div>
+            <div class="card my-1">
+                <div class="card-header text-right small"><button class="btn btn-sm btn-outline-secondary save-tweet">Save</button> <button class="btn btn-sm btn-outline-secondary del-tweet">Delete</button></div>
+                <div class="card-body">
+                    <p class="card-text text-dark">『ランバダ』で話題のわかしょ文庫さんのWEB連載「うろん紀行」もぜひお読みください。</p>
+                </div>
+            </div>
+            <div class="border outline-secondary rounded text-center text-secondary my-1 add-tweet">+</div>
+        </div>
+        <div class="border outline-secondary rounded text-center text-secondary my-3 add-tweet-group">Add Tweet Group</div>
+    </div>
+</div>
+<div class="row bg-white"><div class="col-12" style="height: 100px;"></div></div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>    
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+<script>
+    $(document).on('click', ".save-tweet", function(){
+        alert($(this).parent().parent().find(".card-body").find(".card-text").html())
+    })
+    $(document).on('click', ".del-tweet", function(){
+        $(this).parent().parent().remove()
+    })
+    $(document).on('click', ".edit-tweet-group", function(){
+        $(this).parent().parent().parent().find(".tweet-group-settings-confirmed").addClass("d-none")
+        $(this).parent().parent().parent().find(".tweet-group-settings-confirmed").removeClass("d-block")
+        $(this).parent().parent().parent().find(".tweet-group-settings").addClass("d-block")
+        $(this).parent().parent().parent().find(".tweet-group-settings").removeClass("d-none")
+    })
+    $(document).on('click', ".set-tweet-group", function(){
+        $(this).parent().parent().parent().find(".tweet-group-settings").addClass("d-none")
+        $(this).parent().parent().parent().find(".tweet-group-settings").removeClass("d-block")
+        $(this).parent().parent().parent().find(".tweet-group-settings-confirmed").addClass("d-block")
+        $(this).parent().parent().parent().find(".tweet-group-settings-confirmed").removeClass("d-none")
+    })
+    var card_template = '<div class="card my-2">' +
+                '<div class="card-header text-right small"><button class="btn btn-sm btn-outline-secondary save-tweet">Save</button> <button class="btn btn-sm btn-outline-secondary del-tweet">Delete</button></div>' +
+                '<div class="card-body">' +
+                    '<p class="card-text text-dark"></p>' +
+                '</div>' +
+            '</div>'
+    $(document).on('click', ".add-tweet", function(){
+        $(this).before(card_template);
+    })
+
+    var tweet_group_template =
+                '<div class="my-2">' +
+            '<h5 class="text-secondary">Tweet Group</h5>' +
+            '<div class="p-2 border outline-secondary  rounded set-tweet-group tweet-group-settings d-none">' +
+                '<div class="mb-1">Start: <input type="time" class="form-control form-control-sm" value="20:00" size="5"></div>' +
+                '<div class="my-1">Interval: <input type="integer" class="form-control form-control-sm" value="60" size="3"></div>' +
+                '<select class="form-control form-control-sm my-1"><option>DRAFT</option><option>SCHEDULED</option></select>' +
+                '<div class="text-right"><button class="btn btn-sm btn-secondary small">Set</button></div>' +
+            '</div>' +
+            '<div class="p-2 small border outline-secondary rounded tweet-group-settings-confirmed d-block">' +
+                '<div class="mb-1">Start: 20:00:00</div>' +
+                '<div class="my-1">Interval(sec): 60</div>' +
+                '<div class="">Status: SCHEDULED</div>' +
+                '<div class="text-right"><button class="btn btn-sm btn-secondary small edit-tweet-group">Edit</button></div>' +
+            '</div>' +
+            '<div class="border outline-secondary rounded text-center text-secondary add-tweet">+</div>' +
+        '</div>'
+
+    $(document).on('click', ".add-tweet-group", function(){
+        $(this).before(tweet_group_template)
+    })
+</script>
+
+</body>
+</html>
