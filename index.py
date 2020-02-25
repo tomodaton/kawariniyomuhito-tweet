@@ -62,7 +62,7 @@ def top():
     print(tweets)
     db.close_db(conn)
             
-    return template('top.tpl', dates=dates, groups=groups, tweets=tweets)
+    return template('top3.tpl', dates=dates, groups=groups, tweets=tweets)
 
 
 # API

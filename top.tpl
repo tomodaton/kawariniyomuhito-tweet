@@ -29,7 +29,7 @@
     .tweet-group-container { background-color: whitesmoke; padding: 4px; margin: 4px}
     .tweet { padding: 0px; margin: 2px; background-color: #fafafa}
     .tweet-text { padding: 2px;}
-    .tweet-footer { text-align: right; font-size: 0.5em; color: gray;}
+    .tweet-footer { text-align: right; font-size: 1.0em; color: gray;}
 
   % for date in dates:
   % for group in groups[date]:
@@ -62,14 +62,14 @@
         <span id="tweet-group-settings-form-{{group['gid']}}-confirmed">開始時刻 <span id="tweet-group-settings-form-{{group['gid']}}-confirmed-time">{{group['sched_start_date']}}</span> 間隔 <span id="tweet-group-settings-form-{{group['gid']}}-confirmed-interval">{{group['interval']}}</span> 状態 <span id="tweet-group-settings-form-{{group['gid']}}-confirmed-status">{{group['status']}}</span></span> <span id="btn-edit-tweet-group-{{group['gid']}}">[E]</span>[R]
         % for tweet in tweets[group['gid']]:
           <div class="tweet" id="tweet-{{tweet['id']}}">
-          <div class="tweet-footer">{{tweet['subid']}}: {{tweet['status']}} [S][R]</div>
+              <div class="tweet-footer">{{tweet['subid']}}: {{tweet['status']}} <span class="tweet-save" id="tweet-save-{{tweet['id']}}">[S]</span><span class="tweet-delete" id="tweet-delete-{{tweet['id']}}">[D]</span></div>
           <div class="tweet-text" contenteditable="True">{{tweet['text']}}</div>
           </div>
         % end
           <p id="add-tweet-btn-{{group['gid']}}">ツイートを追加する [+]</p>
       </div>
       % end
-        <p id="add-tweet-group-btn-{{date}}">グループを追加する [+]</p>  
+        <p id="add-tweet-group-btn-{{date}}">グループを追加する [+]</p>
     </div>
     % end
 </article>
@@ -78,7 +78,7 @@
   var loc_tweet_group_id = 0;
   % for date in dates:
     $("#add-tweet-group-btn-{{date}}").click(function(){
-      var html_l = '<div class="tweet-group-container">ほげほげ</div>'
+      var html_l = '<div class="tweet-group-container">ここにTweet Groupが挿入される。</div>'
       $(html_l).insertBefore("#add-tweet-group-btn-{{date}}")
     })
     % for group in groups[date]:
@@ -126,6 +126,19 @@
         $("#add-tweet-btn-{{group['gid']}}").before(html_l);
         loc_tweet_id++
       })
+        % for tweet in tweets[group['gid']]:
+          $("#tweet-save-{{tweet['id']}}").click(function(){
+              alert("save")
+              /* ajaxでtweet update APIを実行 */
+              /* 成功した場合は、特になし？ 失敗した場合は[Failed] を表示して再度。？？？ */
+          })
+          $("#tweet-delete-{{tweet['id']}}").click(function(){
+              alert("delete")
+              /* ajaxでtweet delete APIを実行 */
+              /* 成功した場合は、表示からこの要素を削除する。*/
+ 　 　 　 　 　 /* 失敗した場合は[Failed] を表示して再度。？？？ */
+          })
+        % end
     % end
   % end
 </script>
