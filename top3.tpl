@@ -41,6 +41,8 @@
             </div>
         % for tweet in tweets[group['gid']]:
             <div class="card my-1">
+                <div class="tweet-id d-none">{{tweet['id']}}</div>
+                <div class="tweet-subid d-none">{{tweet['subid']}}</div>
                 <div class="card-header text-right small"><button class="btn btn-sm btn-outline-secondary save-tweet">Save</button> <button class="btn btn-sm btn-outline-secondary del-tweet">Delete</button></div>
                 <div class="card-body">
                     <p class="card-text text-dark" contenteditable="true">{{tweet['text']}}</p>

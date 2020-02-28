@@ -54,11 +54,12 @@ def confirm_group(cursor, gid):
 
 # Tweet操作
 def add_tweet(cursor, gid, subid, text):
-    result = cursor.execute("INSERT INTO sched_tweets(gid, subid, text, tweet_id, actual_date, status) VALUES (?, ?, ?, 1, 1, 'DRAFT')", (gid, subid, text)).lastrowid
+    result = cursor.execute("INSERT INTO sched_tweets(gid, subid, text, tweet_id, actual_date, status) VALUES (?, ?, ?, '', '', 'DRAFT')", (gid, subid, text)).lastrowid
     return result
 
 def update_tweet(cursor, id, text):
     cursor.execute("UPDATE sched_tweets SET text = ? WHERE id = ?", (id, text))
+    return id
 
 def update_tweet_status(cursor, id, tweet_id, status):
     cursor.execute("UPDATE sched_tweets SET status = ?, tweet_id = ? WHERE id = ?", (status, tweet_id, id))

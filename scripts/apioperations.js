@@ -77,7 +77,9 @@ $(document).on('click', ".set-tweet-group", function(){
     })    
 })
 
-var card_template = '<div class="card my-2">' +
+var card_template = '<div class="card my-1">' +
+            '<div class="tweet-id d-none"></div>' +
+            '<div class="tweet-subid d-none"></div>' +
             '<div class="card-header text-right small"><button class="btn btn-sm btn-outline-secondary save-tweet">Save</button> <button class="btn btn-sm btn-outline-secondary del-tweet">Delete</button></div>' +
             '<div class="card-body">' +
                 '<p class="card-text text-dark" contenteditable="true"></p>' +
@@ -86,29 +88,45 @@ var card_template = '<div class="card my-2">' +
 
 $(document).on('click', ".add-tweet", function(){
 
+    $(this).before(card_template);
+    prev_subid = $(this).prev().prev().find(".tweet-subid").html()
+    alert(prev_subid)
+    if ( prev_subid == ''  | prev_subid == null ){
+        prev_subid = 1
+    } else {
+        prev_subid = parseInt(prev_subid,10)+1
+    }
+    $(this).prev().find(".tweet-subid").html(prev_subid)
+    alert(prev_subid)
     /* データ作成 */
     // send: text, gid, subid
+    var send_vals = {}
+    send_vals.gid = $(this).parent().find('.tweet-group-setting-gid').html()
+    send_vals.subid = $(this).prev().find(".tweet-subid").html()
+    send_vals.text = ''
     // receive: id
-
+    // alert(send_vals.gid);
+    
+    _this = $(this)
     /* データ送信 */
     $.ajax({
-      url:'api/1.0/add_tweet.json',
-      type:'POST',
+      url: '/api/1.0/update_tweet.json',
+      type: 'POST',
       contentType: 'application/JSON',
       data: JSON.stringify(send_vals),
       timeout: 10000,
       datatype: 'json'
     })
-    .done(function(){
-      ;
+    .done(function(data){
+        alert(data['id']);
+        _this.prev().find(".tweet-id").html(data['id'])
     })
     .fail(function(){
-      alert("Failed.")
-    })    
+        alert("Failed.")
+    })
 
 
 
-    $(this).before(card_template);
 })
 
 var tweet_group_template = '<div class="my-2">' +

@@ -147,6 +147,7 @@ def api_delete_tweet_group():
     res = HTTPResponse(status=200, headers=header)    
     return res
 
+# 廃止する？ -> update_tweet.json に統合
 @route('/api/1.0/add_tweet.json', method=["POST"])
 def api_add_tweet():
     body = request.json
@@ -170,19 +171,47 @@ def api_add_tweet():
 
 @route('/api/1.0/update_tweet.json', method=["POST"])
 def api_update_tweet():
+    # 新規登録、更新を兼ねる。
+    # 新規登録：id未定義で判定。gid, subid, text が必須。idを採番して返す。
+    # 更新：id定義で判定。textが必須。git, subidはペアで定義されていれば、その値で更新。
+
+    req_error = False;
     body = request.json
 
-    id = body['id']
-    text = body['text']
-    
+    # 入力のチェック
+    try:
+        id = body['id']
+        new_tweet = False;
+    except KeyError:
+        new_tweet = True;    
+
+    try:
+        text = body['text']
+    except KeyError:
+        req_error = True;
+        
     conn = db.connect_db(dbname)
     cursor = db.get_cursor(conn)
-    db.update_tweet(cursor, id, text)
-    
+        
+    if new_tweet == True:  # 新規登録
+        try:
+            gid = body['gid']
+        except KeyError:
+            req_error = True;
+        try:
+            subid = body['subid']
+        except KeyError:
+            req_error = True;
+        
+        id = db.add_tweet(cursor, gid, subid, text)  # return gid
+        print("Added new tweet {} with gid {}, subid {}, and text {}".format(id, gid, subid, text))
+        
+    else:  # 更新
+        id = db.update_tweet(cursor, id, text)
+        print("Updated the tweet with id {}, and text {}".format(id, text))
+            
     db.commit(conn)    
     conn.close()
-    
-    print("Updated the tweet with id {}, and text {}".format(id, text))
     
     header = {"Content-Type": "application/json"}
     res = HTTPResponse(status=200, body=json.dumps({'id': id}), headers=header)    
