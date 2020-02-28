@@ -221,7 +221,7 @@ def api_delete_tweet():
     conn = db.connect_db(dbname)
     cursor = db.get_cursor(conn)
     db.del_tweet(cursor, id)
-    db.commit(conn)    
+    db.commit(conn)
     conn.close()
     
     print("Deleted the tweet with id {}".format(id))
@@ -230,7 +230,9 @@ def api_delete_tweet():
     res = HTTPResponse(status=200, body=json.dumps({'id': id}), headers=header)    
     return res
 
-
-
-
+@route('/scripts/<name>')
+def scripts(name):
+    
+    return template('scripts/' + name)
+    
 run(host='0.0.0.0', port=8081, debug=True)

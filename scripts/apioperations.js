@@ -1,0 +1,162 @@
+$(document).on('click', ".save-tweet", function(){
+    alert($(this).parent().parent().find(".card-body").find(".card-text").html())
+    $(this).parent().parent().find(".card-body").find(".card-text").removeAttr('contenteditable')
+})
+$(document).on('click', ".del-tweet", function(){
+    $(this).parent().parent().remove()
+})
+$(document).on('click', ".edit-tweet-group", function(){
+    /* 設定編集モードのトグル（開始） */
+    $(this).parent().parent().parent().find(".tweet-group-settings-confirmed").addClass("d-none")
+    $(this).parent().parent().parent().find(".tweet-group-settings-confirmed").removeClass("d-block")
+    $(this).parent().parent().parent().find(".tweet-group-settings").addClass("d-block")
+    $(this).parent().parent().parent().find(".tweet-group-settings").removeClass("d-none")
+})
+$(document).on('click', ".set-tweet-group", function(){
+
+
+    /* 設定編集モードのトグル（終了） */
+    $(this).parent().parent().parent().find(".tweet-group-settings").addClass("d-none")
+    $(this).parent().parent().parent().find(".tweet-group-settings").removeClass("d-block")
+    $(this).parent().parent().parent().find(".tweet-group-settings-confirmed").addClass("d-block")
+    $(this).parent().parent().parent().find(".tweet-group-settings-confirmed").removeClass("d-none")
+
+    /* 入力内容の取得 */
+    date_l = $(this).parent().parent().parent().parent().find('.date').html() 
+    gid_l = $(this).parent().parent().find('.tweet-group-setting-gid').html()
+    time_l = $(this).parent().parent().find('.sched-start-time').val()
+    status_l = $(this).parent().parent().find('.tweet-group-status').val()
+    interval_l = $(this).parent().parent().find('.tweet-group-interval').val()
+
+    /* 入力内容のチェック (time_l) */
+    /* フォーマット1(HH:mm:ss)はOK、フォーマット2(HH:mm)はHH:mm:00に、それ以外は"00:00:00"に変換 */
+    var time_pattern = /^[0-9]{2}:[0-9]{2}:[0-9]{2}$/
+    var time_pattern2 = /^[0-9]{2}:[0-9]{2}$/
+    if (time_l.match(time_pattern) == null ) {
+        if (time_l.match(time_pattern2) == null ) {
+            time_l = '00:00:00'
+            alert("null")
+        } else {
+            time_l = time_l + ':00'
+        }
+    }
+
+    /* 入力内容のチェック (interval) */
+    var interval_pattern = /^[1-9][0-9]{0,2}$/
+    if (interval_l.match(interval_pattern) == null) {
+        interval_l = 60
+    }
+
+    datetime_l = date_l + ' ' + time_l    
+    $(this).parent().parent().parent().find('.tweet-group-settings-confirmed').find('.tweet-group-setting-gid').html(gid_l)
+    $(this).parent().parent().parent().find('.tweet-group-settings-confirmed').find('.sched-start-time').html(time_l)
+    $(this).parent().parent().parent().find('.tweet-group-settings-confirmed').find('.tweet-group-status').html(status_l)
+    $(this).parent().parent().parent().find('.tweet-group-settings-confirmed').find('.tweet-group-interval').html(interval_l)
+
+    /* 送信データの生成 */
+    var send_vals = {}
+    send_vals.gid = gid_l
+    send_vals.sched_start_date = datetime_l
+    send_vals.status = status_l
+    send_vals.interval = interval_l
+
+    /* データ送信 */
+    $.ajax({
+      url:'api/1.0/update_tweet_group.json',
+      type:'POST',
+      contentType: 'application/JSON',
+      data: JSON.stringify(send_vals),
+      timeout: 10000,
+      datatype: 'json'
+    })
+    .done(function(){
+      ;
+    })
+    .fail(function(){
+      alert("Failed.")
+    })    
+})
+
+var card_template = '<div class="card my-2">' +
+            '<div class="card-header text-right small"><button class="btn btn-sm btn-outline-secondary save-tweet">Save</button> <button class="btn btn-sm btn-outline-secondary del-tweet">Delete</button></div>' +
+            '<div class="card-body">' +
+                '<p class="card-text text-dark" contenteditable="true"></p>' +
+            '</div>' +
+        '</div>'
+
+$(document).on('click', ".add-tweet", function(){
+
+    /* データ作成 */
+    // send: text, gid, subid
+    // receive: id
+
+    /* データ送信 */
+    $.ajax({
+      url:'api/1.0/add_tweet.json',
+      type:'POST',
+      contentType: 'application/JSON',
+      data: JSON.stringify(send_vals),
+      timeout: 10000,
+      datatype: 'json'
+    })
+    .done(function(){
+      ;
+    })
+    .fail(function(){
+      alert("Failed.")
+    })    
+
+
+
+    $(this).before(card_template);
+})
+
+var tweet_group_template = '<div class="my-2">' +
+        '<h5 class="text-secondary">Tweet Group</h5>' +
+        '<div class="p-2 my-1 border outline-secondary  rounded tweet-group-settings d-none">' +
+            '<div class="tweet-group-setting-gid d-none"></div>' +
+            '<div class="mb-1">Start: <input type="time" class="form-control form-control-sm sched-start-time" value="00:00:00" size="8"></div>' +
+            '<div class="my-1">Interval: <input type="integer" class="form-control form-control-sm tweet-group-interval" value="60" size="3"></div>' +
+            '<select class="form-control form-control-sm my-1 tweet-group-status"><option selected>DRAFT</option><option>SCHEDULED</option></select>' +
+            '<div class="text-right"><button class="btn btn-sm btn-secondary small set-tweet-group">Set</button></div>' +
+        '</div>' +
+        '<div class="p-2 my-1 small border outline-secondary rounded tweet-group-settings-confirmed d-block">' +
+            '<div class="tweet-group-setting-gid d-none"></div>' +
+            '<div class="mb-1">Start: <span class="sched-start-time">00:00:00</span></div>' +
+            '<div class="my-1">Interval(sec): <span class="tweet-group-interval">60</span></div>' +
+            '<div class="">Status: <span class="tweet-group-status">DRAFT</span></div>' +
+            '<div class="text-right"><button class="btn btn-sm btn-secondary small edit-tweet-group">Edit</button></div>' +
+        '</div>' +
+        '<div class="border outline-secondary rounded text-center text-secondary add-tweet">+</div>' +
+    '</div>'
+
+$(document).on('click', ".add-tweet-group", function(){
+
+    /* データ送信 */
+    var send_vals = {}
+    date_l = $(this).parent().find('.date').html() 
+    send_vals.sched_start_date = date_l + ' ' + '00:00:00'
+    send_vals.interval = 60
+
+    _this =$(this)
+
+    $.ajax({
+      url:'api/1.0/add_tweet_group.json',
+      type:'POST',
+      contentType: 'application/JSON',
+      data: JSON.stringify(send_vals),
+      timeout: 10000,
+      datatype: 'json'
+    })
+    .done(function(data){
+        gid_l = data['gid']
+
+        // alert(gid_l)
+        _this.before(tweet_group_template)
+        _this.prev().find('.tweet-group-setting-gid').html(gid_l)
+    })
+    .fail(function(){
+      alert("Failed.")
+    })
+
+})
