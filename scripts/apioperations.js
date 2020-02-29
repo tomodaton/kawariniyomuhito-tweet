@@ -1,12 +1,12 @@
 $(document).on('click', ".save-tweet", function(){
-    alert($(this).parent().parent().find(".card-body").find(".card-text").html())
+    // alert($(this).parent().parent().find(".card-body").find(".card-text").html())
     // $(this).parent().parent().find(".card-body").find(".card-text").removeAttr('contenteditable')
     
     /* データ作成 */
     // send: text, gid, subid
     var send_vals = {}
     send_vals.id = $(this).parent().parent().find('.tweet-id').html()
-    alert(send_vals.id)
+    // alert(send_vals.id)
     send_vals.text = $(this).parent().parent().find(".card-body").find(".card-text").html()
     // receive: id
     // alert(send_vals.gid);
@@ -22,7 +22,7 @@ $(document).on('click', ".save-tweet", function(){
       datatype: 'json'
     })
     .done(function(data){
-        alert(data['id']);
+        // alert(data['id']);
         _this.removeClass("btn-outline-danger")
         _this.addClass("btn-outline-secondary")
 
@@ -37,7 +37,33 @@ $(document).on('click', ".save-tweet", function(){
     
 })
 $(document).on('click', ".del-tweet", function(){
-    $(this).parent().parent().remove()
+    
+    /* データ作成 */
+    // send: text, gid, subid
+    var send_vals = {}
+    send_vals.id = $(this).parent().parent().find('.tweet-id').html()
+    // alert(send_vals.id)
+    
+    _this = $(this)
+    /* データ送信 */
+    $.ajax({
+      url: '/api/1.0/delete_tweet.json',
+      type: 'POST',
+      contentType: 'application/JSON',
+      data: JSON.stringify(send_vals),
+      timeout: 10000,
+      datatype: 'json'
+    })
+    .done(function(data){
+        // alert(data['id']);
+        _this.parent().parent().remove()
+    })
+    .fail(function(){
+        alert("Failed.")
+    })
+
+
+
 })
 $(document).on('click', ".edit-tweet-group", function(){
     /* 設定編集モードのトグル（開始） */
@@ -69,7 +95,6 @@ $(document).on('click', ".set-tweet-group", function(){
     if (time_l.match(time_pattern) == null ) {
         if (time_l.match(time_pattern2) == null ) {
             time_l = '00:00:00'
-            alert("null")
         } else {
             time_l = time_l + ':00'
         }
@@ -104,10 +129,10 @@ $(document).on('click', ".set-tweet-group", function(){
       datatype: 'json'
     })
     .done(function(){
-      ;
+        ;
     })
     .fail(function(){
-      alert("Failed.")
+        alert("Failed.")
     })    
 })
 
@@ -124,14 +149,14 @@ $(document).on('click', ".add-tweet", function(){
 
     $(this).before(card_template);
     prev_subid = $(this).prev().prev().find(".tweet-subid").html()
-    alert(prev_subid)
+    // alert(prev_subid)
     if ( prev_subid == ''  | prev_subid == null ){
         prev_subid = 1
     } else {
         prev_subid = parseInt(prev_subid,10)+1
     }
     $(this).prev().find(".tweet-subid").html(prev_subid)
-    alert(prev_subid)
+    // alert(prev_subid)
     /* データ作成 */
     // send: text, gid, subid
     var send_vals = {}
@@ -152,13 +177,13 @@ $(document).on('click', ".add-tweet", function(){
       datatype: 'json'
     })
     .done(function(data){
-        alert(data['id']);
+        // alert(data['id']);
         _this.prev().find(".tweet-id").html(data['id'])
     })
     .fail(function(){
-        alert("Failed.")
         _this.prev().find(".save-tweet").removeClass("btn-outline-secondary")
         _this.prev().find(".save-tweet").addClass("btn-outline-danger")
+        alert("Failed.")
     })
 })
 
@@ -207,7 +232,7 @@ $(document).on('click', ".add-tweet-group", function(){
         _this.prev().find('.tweet-group-setting-gid').html(gid_l)
     })
     .fail(function(){
-      alert("Failed.")
+        alert("Failed.")
     })
 
 })

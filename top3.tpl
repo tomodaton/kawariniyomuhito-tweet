@@ -16,7 +16,6 @@
         &nbsp; <button class="btn btn-primary">View</button>
     </form>
 </div>
-<h2 class="text-primary">Tweet管理</h2>
 <div class="row bg-white">
 % import re, time, datetime
 % for date in dates:
