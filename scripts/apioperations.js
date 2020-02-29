@@ -190,18 +190,18 @@ $(document).on('click', ".add-tweet", function(){
 var tweet_group_template = '<div class="my-2">' +
         '<h5 class="text-secondary">Tweet Group</h5>' +
         '<div class="p-2 my-1 border outline-secondary  rounded tweet-group-settings d-none">' +
+            '<div class="text-right"><button class="btn btn-sm btn-secondary small set-tweet-group">Set</button></div>' +
             '<div class="tweet-group-setting-gid d-none"></div>' +
             '<div class="mb-1">Start: <input type="time" class="form-control form-control-sm sched-start-time" value="00:00:00" size="8"></div>' +
             '<div class="my-1">Interval: <input type="integer" class="form-control form-control-sm tweet-group-interval" value="60" size="3"></div>' +
             '<select class="form-control form-control-sm my-1 tweet-group-status"><option selected>DRAFT</option><option>SCHEDULED</option></select>' +
-            '<div class="text-right"><button class="btn btn-sm btn-secondary small set-tweet-group">Set</button></div>' +
         '</div>' +
         '<div class="p-2 my-1 small border outline-secondary rounded tweet-group-settings-confirmed d-block">' +
-            '<div class="tweet-group-setting-gid d-none"></div>' +
+            '<div class="text-right"><button class="btn btn-sm btn-secondary small edit-tweet-group">Edit</button></div>' +
+    '<div class="tweet-group-setting-gid d-none"></div>' +
             '<div class="mb-1">Start: <span class="sched-start-time">00:00:00</span></div>' +
             '<div class="my-1">Interval(sec): <span class="tweet-group-interval">60</span></div>' +
             '<div class="">Status: <span class="tweet-group-status">DRAFT</span></div>' +
-            '<div class="text-right"><button class="btn btn-sm btn-secondary small edit-tweet-group">Edit</button></div>' +
         '</div>' +
         '<div class="border outline-secondary rounded text-center text-secondary add-tweet">+</div>' +
     '</div>'

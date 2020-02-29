@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-<title>Test</title>
+<title>代わりに読む人 Tweet Manager</title>
 </head>
 <body>
 <div class="container">
@@ -12,7 +12,7 @@
     <h1>代わりに読む人</h1>
     <p>Tweet Manager v0.0</p>
     <form class="form-inline justify-content-center" action="./top.html" method="get">
-        <input type="date" name="from_date" class="form-control" value="2020-02-24" size="10">-<input type="date" class="form-control" name ="to_date" value="2020-02-27" size="10">
+        <input type="date" name="from_date" class="form-control" value="{{dates[0]}}" size="10">-<input type="date" class="form-control" name ="to_date" value="{{dates[-1]}}" size="10">
         &nbsp; <button class="btn btn-primary">View</button>
     </form>
 </div>
@@ -25,18 +25,18 @@
         <div class="my-2">
             <h5 class="text-secondary">Tweet Group</h5>
             <div class="p-2 my-1 border outline-secondary  rounded tweet-group-settings d-none">
+                <div class="text-right"><button class="btn btn-sm btn-secondary small set-tweet-group">Set</button></div>
                 <div class="tweet-group-setting-gid d-none">{{group['gid']}}</div>
                 <div class="mb-1">Start: <input type="time" class="form-control form-control-sm sched-start-time" value="{{datetime.datetime.strptime(group['sched_start_date'],'%Y-%m-%d %H:%M:%S').strftime('%H:%M:%S')}}" size="8"></div>
                 <div class="my-1">Interval: <input type="integer" class="form-control form-control-sm tweet-group-interval" value="{{group['interval']}}" size="3"></div>
                 <select class="form-control form-control-sm my-1 tweet-group-status"><option>DRAFT</option><option>SCHEDULED</option></select>
-                <div class="text-right"><button class="btn btn-sm btn-secondary small set-tweet-group">Set</button></div>
             </div>
             <div class="p-2 my-1 small border outline-secondary rounded tweet-group-settings-confirmed d-block">
+                <div class="text-right"><button class="btn btn-sm btn-secondary small edit-tweet-group">Edit</button></div>
                 <div class="tweet-group-setting-gid d-none">{{group['gid']}}</div>
                 <div class="mb-1">Start: <span class="sched-start-time">{{datetime.datetime.strptime(group['sched_start_date'],'%Y-%m-%d %H:%M:%S').strftime('%H:%M:%S')}}</span></div>
                 <div class="my-1">Interval(sec): <span class="tweet-group-interval">{{group['interval']}}</span></div>
                 <div class="">Status: <span class="tweet-group-status">{{group['status']}}</span></div>
-                <div class="text-right"><button class="btn btn-sm btn-secondary small edit-tweet-group">Edit</button></div>
             </div>
         % for tweet in tweets[group['gid']]:
             <div class="card my-1">

@@ -45,7 +45,7 @@ def top():
 
     from_date = request.query.get('from_date')
     to_date = request.query.get('to_date')
-            
+    
     dates = generate_dates(from_date, to_date)
 
     # DBアクセス
