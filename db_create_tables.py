@@ -58,7 +58,8 @@ def add_tweet(cursor, gid, subid, text):
     return result
 
 def update_tweet(cursor, id, text):
-    cursor.execute("UPDATE sched_tweets SET text = ? WHERE id = ?", (id, text))
+    # import pdb; pdb.set_trace()    
+    cursor.execute("UPDATE sched_tweets SET text = ? WHERE id = ?", (text, id))
     return id
 
 def update_tweet_status(cursor, id, tweet_id, status):
@@ -94,7 +95,7 @@ def list_sched_tweets(conn, cursor, datetime_s):
     return result
 
 def search_scheduled_tweet_groups(conn, cursor, datetime_s):
-    cursor.execute("SELECT gid FROM sched_tweet_groups WHERE sched_start_date <= ? AND status = 'SCHEDULED'", (datetime_s,))
+    cursor.execute("SELECT gid, interval FROM sched_tweet_groups WHERE sched_start_date <= ? AND status = 'SCHEDULED'", (datetime_s,))
     result = cursor.fetchall()
     return result
 

@@ -22,11 +22,14 @@ cursor = dbc.get_cursor(conn)
 
 
 gids = []
+intervals = {}
 tweets = {}
 
+# import pdb; pdb.set_trace()
 groups = dbc.search_scheduled_tweet_groups(conn, cursor, current_datetime)
 for tuple in groups:
     gids.append(tuple['gid'])
+    intervals[tuple['gid']] = tuple['interval']
 
 print(gids)
 
@@ -40,7 +43,8 @@ dbc.close_db(conn)
 for gid in gids:
     for tuple in tweets[gid]:
         # Tweet処理
-        res = tc.post_tweet(twitter, tuple['text']+current_datetime)
+        # res = tc.post_tweet(twitter, tuple['text']+current_datetime)
+        res = tc.post_tweet(twitter, tuple['text'])
         # res = tc.post_tweet(twitter, tuple['text']+current_datetime)
         status_code = res.status_code
         tweet_id = json.loads(res.text)['id']
@@ -57,8 +61,8 @@ for gid in gids:
         dbc.update_tweet_status(cursor, tuple['id'], tweet_id, status)
         dbc.commit(conn)
         dbc.close_db(conn)
-        # time.sleep(tuple['interval'])
-        time.sleep(10)
+        time.sleep(intervals[gid])
+        # time.sleep(10)
     # 
     conn = dbc.connect_db(dbname)
     cursor = dbc.get_cursor(conn)

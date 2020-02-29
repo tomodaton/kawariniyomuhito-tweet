@@ -1,6 +1,40 @@
 $(document).on('click', ".save-tweet", function(){
     alert($(this).parent().parent().find(".card-body").find(".card-text").html())
-    $(this).parent().parent().find(".card-body").find(".card-text").removeAttr('contenteditable')
+    // $(this).parent().parent().find(".card-body").find(".card-text").removeAttr('contenteditable')
+    
+    /* データ作成 */
+    // send: text, gid, subid
+    var send_vals = {}
+    send_vals.id = $(this).parent().parent().find('.tweet-id').html()
+    alert(send_vals.id)
+    send_vals.text = $(this).parent().parent().find(".card-body").find(".card-text").html()
+    // receive: id
+    // alert(send_vals.gid);
+    
+    _this = $(this)
+    /* データ送信 */
+    $.ajax({
+      url: '/api/1.0/update_tweet.json',
+      type: 'POST',
+      contentType: 'application/JSON',
+      data: JSON.stringify(send_vals),
+      timeout: 10000,
+      datatype: 'json'
+    })
+    .done(function(data){
+        alert(data['id']);
+        _this.removeClass("btn-outline-danger")
+        _this.addClass("btn-outline-secondary")
+
+    })
+    .fail(function(){
+        _this.removeClass("btn-outline-secondary")
+        _this.addClass("btn-outline-danger")
+        alert("Failed.")
+    })
+    
+    
+    
 })
 $(document).on('click', ".del-tweet", function(){
     $(this).parent().parent().remove()
@@ -123,10 +157,9 @@ $(document).on('click', ".add-tweet", function(){
     })
     .fail(function(){
         alert("Failed.")
+        _this.prev().find(".save-tweet").removeClass("btn-outline-secondary")
+        _this.prev().find(".save-tweet").addClass("btn-outline-danger")
     })
-
-
-
 })
 
 var tweet_group_template = '<div class="my-2">' +

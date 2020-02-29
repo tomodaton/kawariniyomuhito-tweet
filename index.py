@@ -210,7 +210,7 @@ def api_update_tweet():
         id = db.update_tweet(cursor, id, text)
         print("Updated the tweet with id {}, and text {}".format(id, text))
             
-    db.commit(conn)    
+    db.commit(conn)
     conn.close()
     
     header = {"Content-Type": "application/json"}
