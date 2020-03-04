@@ -1,0 +1,3 @@
+PATH=<paths>
+
+*/10 * * * * cd <script directory>; python sched_tweet.py
