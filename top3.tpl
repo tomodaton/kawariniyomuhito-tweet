@@ -24,22 +24,22 @@
       % for group in groups[date]:
         <div class="my-2">
             <h5 class="text-secondary">Tweet Group</h5>
-            <div class="p-2 my-1 border outline-secondary  rounded tweet-group-settings d-none">
+            <div class="p-2 my-1 border outline-secondary  rounded tweet-group-settings d-none shadow-sm">
                 <div class="text-right"><button class="btn btn-sm btn-secondary small set-tweet-group">Set</button></div>
                 <div class="tweet-group-setting-gid d-none">{{group['gid']}}</div>
                 <div class="mb-1">Start: <input type="time" class="form-control form-control-sm sched-start-time" value="{{datetime.datetime.strptime(group['sched_start_date'],'%Y-%m-%d %H:%M:%S').strftime('%H:%M:%S')}}" size="8"></div>
                 <div class="my-1">Interval: <input type="integer" class="form-control form-control-sm tweet-group-interval" value="{{group['interval']}}" size="3"></div>
                 <select class="form-control form-control-sm my-1 tweet-group-status"><option>DRAFT</option><option>SCHEDULED</option></select>
             </div>
-            <div class="p-2 my-1 small border outline-secondary rounded tweet-group-settings-confirmed d-block">
-                <div class="text-right"><button class="btn btn-sm btn-secondary small edit-tweet-group">Edit</button></div>
+            <div class="p-2 my-1 small border outline-secondary rounded tweet-group-settings-confirmed d-block shadow-sm">
+                <div class="text-right"><button class="btn btn-sm btn-outline-secondary small edit-tweet-group">Edit</button></div>
                 <div class="tweet-group-setting-gid d-none">{{group['gid']}}</div>
                 <div class="mb-1">Start: <span class="sched-start-time">{{datetime.datetime.strptime(group['sched_start_date'],'%Y-%m-%d %H:%M:%S').strftime('%H:%M:%S')}}</span></div>
                 <div class="my-1">Interval(sec): <span class="tweet-group-interval">{{group['interval']}}</span></div>
                 <div class="">Status: <span class="tweet-group-status">{{group['status']}}</span></div>
             </div>
         % for tweet in tweets[group['gid']]:
-            <div class="card my-1">
+            <div class="card my-1 shadow-sm">
                 <div class="tweet-id d-none">{{tweet['id']}}</div>
                 <div class="tweet-subid d-none">{{tweet['subid']}}</div>
                 <div class="card-header text-right small"><button class="btn btn-sm btn-outline-secondary save-tweet">Save</button> <button class="btn btn-sm btn-outline-secondary del-tweet">Delete</button></div>

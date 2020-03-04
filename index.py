@@ -1,11 +1,12 @@
 # -*- coding:utf-8 -*-
-from bottle import route, run, request, HTTPResponse
+from bottle import route, run, request, response, HTTPResponse
 from bottle import template
 import json
 import sqlite3
 import db_create_tables as db
 import time, datetime
-
+import config
+import hashlib
 
 dbname = './example.db'
 # dbname = './schetweet.db'
@@ -33,24 +34,101 @@ def generate_dates(from_date, to_date):
         datetime_l = datetime_l + datetime.timedelta(days=1)
     return dates
 
+def authorize(username, password):
 
+    # DBアクセス
+    conn = db.connect_db(dbname)
+    cursor = db.get_cursor(conn)
 
-@route('/')
+    # import pdb; pdb.set_trace()
+    # if username != '' and username != None:
+    result = db.search_user_password(cursor, username, password)
+    conn.close()
+    
+    return result
+
+def authorize_sessionid(sessionid):
+
+    # import pdb; pdb.set_trace()
+    if sessionid != '' and sessionid != None:
+        # DBアクセス
+        conn = db.connect_db(dbname)
+        cursor = db.get_cursor(conn)
+        result = db.check_sessionid(cursor, sessionid)
+        conn.close()
+        return result
+    else:
+        return False
+    
+def generate_sessionid():
+    
+
+    # session IDの生成 (hash関数を使う)
+    sessionid_src = str(datetime.datetime.now()) + config.RANDOM_SEED
+    print("session id source: " + sessionid_src)
+    sessionid = hashlib.sha256(sessionid_src.encode()).hexdigest()
+    print("session id: " + sessionid)
+    # session IDのDBへの登録
+    # DBアクセス
+    conn = db.connect_db(dbname)
+    cursor = db.get_cursor(conn)
+    db.register_sessionid(cursor, sessionid)
+    db.commit(conn)
+    conn.close()
+
+    return sessionid
+
+    
+@route('/', method=['GET', 'POST'])
 def index():
-    name = "代わりに読む人"
-    return template('index.tpl', name=name)
+
+    input_username = request.forms.get("username")
+    input_password = request.forms.get("password")
+
+    print("USERNAME: {}".format(input_username))
+    print("PASSWORD: {}".format(input_password))
+
+    login = authorize(input_username, input_password)
+    print(login)
+    if ( login ):
+        login = True
+
+        # Session ID生成
+        sessionid = generate_sessionid()
+        # Session IDセット
+        response.set_cookie("session", sessionid)
+
+    else:
+        login = False
+
+    return template('index.tpl', login=login)
+
 
 @route('/top.html', method='GET')
 def top():
+
+    ## 認証 ##
+    print("Request Session ID: " + str(request.get_cookie("session")))
+    # Session IDチェック (これは "/"以外のすべてのアクセスで行う。)
+    # DBアクセス
+    conn = db.connect_db(dbname)
+    cursor = db.get_cursor(conn)
+    sessionid = request.get_cookie("session")
+
+    sessionid_valid = authorize_sessionid(sessionid)
+
+    if ( sessionid_valid == False ):
+        header = {"Content-Type": "application/text"}
+        res = HTTPResponse(status=302, headers=header)
+        res.set_header('location', '/')
+        return res
+    ## 認証ここまで ##
 
     from_date = request.query.get('from_date')
     to_date = request.query.get('to_date')
     
     dates = generate_dates(from_date, to_date)
 
-    # DBアクセス
-    conn = db.connect_db(dbname)
-    cursor = db.get_cursor(conn)
 
     groups = {}
     tweets = {}
@@ -59,7 +137,7 @@ def top():
         groups[date]= results
         for group in results:
             tweets[group['gid']] = db.search_tweets_by_gid(cursor, group['gid'])
-    print(tweets)
+    print('tweets: '+str(tweets))
     db.close_db(conn)
             
     return template('top3.tpl', dates=dates, groups=groups, tweets=tweets)

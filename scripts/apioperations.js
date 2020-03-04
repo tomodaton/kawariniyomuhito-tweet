@@ -136,7 +136,7 @@ $(document).on('click', ".set-tweet-group", function(){
     })    
 })
 
-var card_template = '<div class="card my-1">' +
+var card_template = '<div class="card my-1 shadow-sm">' +
             '<div class="tweet-id d-none"></div>' +
             '<div class="tweet-subid d-none"></div>' +
             '<div class="card-header text-right small"><button class="btn btn-sm btn-outline-secondary save-tweet">Save</button> <button class="btn btn-sm btn-outline-secondary del-tweet">Delete</button></div>' +
@@ -189,14 +189,14 @@ $(document).on('click', ".add-tweet", function(){
 
 var tweet_group_template = '<div class="my-2">' +
         '<h5 class="text-secondary">Tweet Group</h5>' +
-        '<div class="p-2 my-1 border outline-secondary  rounded tweet-group-settings d-none">' +
+        '<div class="p-2 my-1 border outline-secondary  rounded tweet-group-settings d-none shadow-sm">' +
             '<div class="text-right"><button class="btn btn-sm btn-secondary small set-tweet-group">Set</button></div>' +
             '<div class="tweet-group-setting-gid d-none"></div>' +
             '<div class="mb-1">Start: <input type="time" class="form-control form-control-sm sched-start-time" value="00:00:00" size="8"></div>' +
             '<div class="my-1">Interval: <input type="integer" class="form-control form-control-sm tweet-group-interval" value="60" size="3"></div>' +
             '<select class="form-control form-control-sm my-1 tweet-group-status"><option selected>DRAFT</option><option>SCHEDULED</option></select>' +
         '</div>' +
-        '<div class="p-2 my-1 small border outline-secondary rounded tweet-group-settings-confirmed d-block">' +
+        '<div class="p-2 my-1 small border outline-secondary rounded tweet-group-settings-confirmed d-block shadow-sm">' +
             '<div class="text-right"><button class="btn btn-sm btn-secondary small edit-tweet-group">Edit</button></div>' +
     '<div class="tweet-group-setting-gid d-none"></div>' +
             '<div class="mb-1">Start: <span class="sched-start-time">00:00:00</span></div>' +

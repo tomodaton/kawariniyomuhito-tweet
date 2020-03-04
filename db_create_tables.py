@@ -15,8 +15,13 @@ def get_cursor(conn):
 
 def create_tables(cursor):
     # Create Tables
+    cursor.execute("DROP TABLE IF EXISTS users")
+    cursor.execute("DROP TABLE IF EXISTS sessions")
     cursor.execute("DROP TABLE IF EXISTS sched_tweets")
     cursor.execute("DROP TABLE IF EXISTS sched_tweet_groups")
+
+    cursor.execute("CREATE TABLE users (username TEXT PRIMARY KEY, password TEXT)")
+    cursor.execute("CREATE TABLE sessions (sessionid TEXT, expire TEXT)")
     cursor.execute("CREATE TABLE sched_tweets (id INTEGER PRIMARY KEY AUTOINCREMENT, gid INTEGER, subid INTEGER, text TEXT, tweet_id INTEGER, actual_date TEXT, status TEXT)")
     cursor.execute("CREATE TABLE sched_tweet_groups (gid INTEGER PRIMARY KEY AUTOINCREMENT,sched_start_date TEXT,interval INT,actual_start_date TEXT,status TEXT)")
     
@@ -25,6 +30,32 @@ def commit(conn):
     
 def close_db(conn):
     conn.close()
+
+# User/Session管理
+def search_user_password(cursor, username, password):
+    cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
+    item = cursor.fetchone()
+    # print(str(dict(item)))
+
+    if item != None:
+        return True
+    else:
+        return False
+
+def register_sessionid(cursor, sessionid):
+    datetime_now = datetime.datetime.now()
+    datetime_expire = datetime_now + datetime.timedelta(seconds=600)
+    cursor.execute("INSERT INTO sessions VALUES (?, ?)", (sessionid, datetime_expire))
+    
+def check_sessionid(cursor, sessionid):
+
+    datetime_now = datetime.datetime.now()
+    cursor.execute("SELECT * FROM sessions WHERE sessionid = ? AND expire > ?", (sessionid, datetime_now))
+    result = cursor.fetchone()
+    if result != None:
+        print(dict(result))
+        return True
+    return False
 
 # Tweet Group操作
 def add_group(cursor, sched_start_date, interval):
@@ -124,7 +155,7 @@ if __name__ == '__main__':
     while 1:
         print()
         print()
-        mode = input('Init: 0, Show Tables: 01, Add/Show/Search/Delete Group: 11/12/13/19, Add/Show/Delete Tweet: 21/22/23, Search Tweets/Scheduled Tweets: 31/32, Set Scheduled: 40, Exit: 9>> ')
+        mode = input('Init: 0, Show Tables: 01, Add Users: 02, Add Sessions: 03, Add/Show/Search/Delete Group: 11/12/13/19, Add/Show/Delete Tweet: 21/22/23, Search Tweets/Scheduled Tweets: 31/32, Set Scheduled: 40, Exit: 9>> ')
         print(mode)
 
         if mode == '0':
@@ -134,6 +165,22 @@ if __name__ == '__main__':
             cursor.execute("SELECT * FROM sqlite_master WHERE type='table'")
             for item in cursor.fetchall():
                 print(item)
+        elif mode == '02':
+            username = input('username >>')
+            password = input('password >>')
+            cursor.execute("INSERT INTO users VALUES (?, ?)", (username, password))
+            conn.commit()
+            cursor.execute("SELECT * FROM users")
+            for item in cursor.fetchall():
+                print(dict(item))
+        elif mode == '03':
+            sessionid = input('sessionid >>')
+            expire = input('expire >>')
+            cursor.execute("INSERT INTO sessions VALUES (?, ?)", (sessionid, expire))
+            conn.commit()
+            cursor.execute("SELECT * FROM sessions")
+            for item in cursor.fetchall():
+                print(dict(item))
         elif mode == '11': # Tweet Group追加
             sched_start_date = input('Start Date>>')
             result = add_group(cursor, sched_start_date, 1)

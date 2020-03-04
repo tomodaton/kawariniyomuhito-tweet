@@ -20,6 +20,7 @@ def twitter_auth():
     
 def retweet(tweetId):
     url = url_retweet_base + "%s.json"%tweetId
+    url = url_retweet_base + "%s.json"%tweetId
     res = twitter.post(url)
     print(res)
     return res
