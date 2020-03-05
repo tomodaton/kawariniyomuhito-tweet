@@ -1,6 +1,7 @@
 import sqlite3
 import json
 import time, datetime
+import config
 
 dbname = './example.db'
 # dbname = './schetweet.db'
@@ -44,7 +45,7 @@ def search_user_password(cursor, username, password):
 
 def register_sessionid(cursor, sessionid):
     datetime_now = datetime.datetime.now()
-    datetime_expire = datetime_now + datetime.timedelta(seconds=600)
+    datetime_expire = datetime_now + datetime.timedelta(seconds=config.VALIDITY_PERIOD)
     cursor.execute("INSERT INTO sessions VALUES (?, ?)", (sessionid, datetime_expire))
     
 def check_sessionid(cursor, sessionid):
@@ -56,6 +57,11 @@ def check_sessionid(cursor, sessionid):
         print(dict(result))
         return True
     return False
+
+def extend_validate_period(cursor, sessionid):
+    datetime_now = datetime.datetime.now()
+    new_datetime_expire = datetime_now + datetime.timedelta(seconds=config.VALIDITY_PERIOD)
+    cursor.execute("UPDATE sessions SET expire = ? WHERE sessionid = ?", (new_datetime_expire, sessionid))
 
 # Tweet Group操作
 def add_group(cursor, sched_start_date, interval):

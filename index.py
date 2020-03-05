@@ -34,27 +34,43 @@ def generate_dates(from_date, to_date):
         datetime_l = datetime_l + datetime.timedelta(days=1)
     return dates
 
-def authorize(username, password):
+def authorize(request):
+
+    """
+     　request に対して、(username, password)をチェックし、
+     　認証できたら True, そうでなければ False を返す。
+    """
+    
+    username = request.forms.get("username")
+    password = request.forms.get("password")
+
+    print("USERNAME: {}".format(username))
+    print("PASSWORD: {}".format(password))
 
     # DBアクセス
     conn = db.connect_db(dbname)
     cursor = db.get_cursor(conn)
-
-    # import pdb; pdb.set_trace()
-    # if username != '' and username != None:
     result = db.search_user_password(cursor, username, password)
     conn.close()
     
     return result
 
-def authorize_sessionid(sessionid):
+def authorize_sessionid(request):
 
-    # import pdb; pdb.set_trace()
+    # RequestのSession IDの取得 ##
+    sessionid = request.get_cookie("session")
+    print("Request Session ID: " + str(sessionid))
+
+    # DBアクセスし、Session IDをチェック
     if sessionid != '' and sessionid != None:
         # DBアクセス
         conn = db.connect_db(dbname)
         cursor = db.get_cursor(conn)
         result = db.check_sessionid(cursor, sessionid)
+        # 有効期間の更新
+        if result == True:
+            db.extend_validate_period(cursor, sessionid)
+            db.commit(conn)
         conn.close()
         return result
     else:
@@ -62,12 +78,11 @@ def authorize_sessionid(sessionid):
     
 def generate_sessionid():
     
-
     # session IDの生成 (hash関数を使う)
     sessionid_src = str(datetime.datetime.now()) + config.RANDOM_SEED
-    print("session id source: " + sessionid_src)
+    print("Session ID src: " + sessionid_src)
     sessionid = hashlib.sha256(sessionid_src.encode()).hexdigest()
-    print("session id: " + sessionid)
+    print("New Session ID: " + sessionid)
     # session IDのDBへの登録
     # DBアクセス
     conn = db.connect_db(dbname)
@@ -78,26 +93,32 @@ def generate_sessionid():
 
     return sessionid
 
-    
+def generate_response_if_auth_failed():
+    header = {"Content-Type": "application/text"}
+    res = HTTPResponse(status=302, headers=header)
+    res.set_header('location', '/')
+    return res
+
+def generate_api_response_if_auth_failed():
+    header = {"Content-Type": "application/text"}
+    res = HTTPResponse(status=302, headers=header)
+    return res
+
 @route('/', method=['GET', 'POST'])
 def index():
 
-    input_username = request.forms.get("username")
-    input_password = request.forms.get("password")
+    # login認証
+    login = authorize(request)
+    print("Login authorization:" +str(login))
 
-    print("USERNAME: {}".format(input_username))
-    print("PASSWORD: {}".format(input_password))
-
-    login = authorize(input_username, input_password)
-    print(login)
+    # login認証に成功
     if ( login ):
-        login = True
-
         # Session ID生成
         sessionid = generate_sessionid()
         # Session IDセット
         response.set_cookie("session", sessionid)
 
+    # login認証に失敗
     else:
         login = False
 
@@ -107,28 +128,26 @@ def index():
 @route('/top.html', method='GET')
 def top():
 
-    ## 認証 ##
-    print("Request Session ID: " + str(request.get_cookie("session")))
-    # Session IDチェック (これは "/"以外のすべてのアクセスで行う。)
-    # DBアクセス
-    conn = db.connect_db(dbname)
-    cursor = db.get_cursor(conn)
-    sessionid = request.get_cookie("session")
+    # Session ID認証
+    sessionid_valid = authorize_sessionid(request)
 
-    sessionid_valid = authorize_sessionid(sessionid)
+    # Session ID認証成功
+    if ( sessionid_valid == True ):
+        pass
+    # Session ID認証失敗
+    else:
+        return generate_response_if_auth_failed()
 
-    if ( sessionid_valid == False ):
-        header = {"Content-Type": "application/text"}
-        res = HTTPResponse(status=302, headers=header)
-        res.set_header('location', '/')
-        return res
-    ## 認証ここまで ##
-
+    ## Session ID認証成功の場合のresponse生成
+    # 1. 表示期間の生成
     from_date = request.query.get('from_date')
     to_date = request.query.get('to_date')
-    
     dates = generate_dates(from_date, to_date)
 
+    # 2. 表示ツイートの抽出
+    #  DBアクセス
+    conn = db.connect_db(dbname)
+    cursor = db.get_cursor(conn)
 
     groups = {}
     tweets = {}
@@ -148,6 +167,19 @@ def top():
 # ツイート 追加/更新/検索(by gid)/削除
 @route('/api/1.0/add_tweet_group.json', method=["POST"])
 def api_add_tweet_group():
+
+    # Session ID認証
+    sessionid_valid = authorize_sessionid(request)
+
+    # Session ID認証成功
+    if ( sessionid_valid == True ):
+        pass
+    # Session ID認証失敗
+    else:
+        return generate_api_response_if_auth_failed()
+
+
+    ## Session ID認証成功の場合のメイン処理
     body = request.json
 
     sched_start_date = body['sched_start_date']
@@ -167,6 +199,19 @@ def api_add_tweet_group():
 
 @route('/api/1.0/update_tweet_group.json', method=["POST"])
 def api_update_tweet_group():
+
+    # Session ID認証
+    sessionid_valid = authorize_sessionid(request)
+
+    # Session ID認証成功
+    if ( sessionid_valid == True ):
+        pass
+    # Session ID認証失敗
+    else:
+        return generate_api_response_if_auth_failed()
+
+
+    ## Session ID認証成功の場合のメイン処理
     print("Content-Type: {}".format(request.get_header))
     body = request.json
     print(body)
@@ -189,6 +234,19 @@ def api_update_tweet_group():
 
 @route('/api/1.0/search_tweet_groups_by_date', method=["POST"])
 def api_search_tweet_groups_by_date():
+
+    # Session ID認証
+    sessionid_valid = authorize_sessionid(request)
+
+    # Session ID認証成功
+    if ( sessionid_valid == True ):
+        pass
+    # Session ID認証失敗
+    else:
+        return generate_api_response_if_auth_failed()
+
+
+    ## Session ID認証成功の場合のメイン処理
     print("Content-Type: {}".format(request.get_header))
     body = request.json
     print(body)
@@ -209,6 +267,19 @@ def api_search_tweet_groups_by_date():
 
 @route('/api/1.0/delete_tweet_group.json', method=["POST"])
 def api_delete_tweet_group():
+
+    # Session ID認証
+    sessionid_valid = authorize_sessionid(request)
+
+    # Session ID認証成功
+    if ( sessionid_valid == True ):
+        pass
+    # Session ID認証失敗
+    else:
+        return generate_api_response_if_auth_failed()
+
+
+    ## Session ID認証成功の場合のメイン処理
     body = request.json
 
     gid = body['gid']
@@ -228,6 +299,19 @@ def api_delete_tweet_group():
 # 廃止する？ -> update_tweet.json に統合
 @route('/api/1.0/add_tweet.json', method=["POST"])
 def api_add_tweet():
+
+    # Session ID認証
+    sessionid_valid = authorize_sessionid(request)
+
+    # Session ID認証成功
+    if ( sessionid_valid == True ):
+        pass
+    # Session ID認証失敗
+    else:
+        return generate_api_response_if_auth_failed()
+
+
+    ## Session ID認証成功の場合のメイン処理
     body = request.json
 
     gid = body['gid']
@@ -253,6 +337,18 @@ def api_update_tweet():
     # 新規登録：id未定義で判定。gid, subid, text が必須。idを採番して返す。
     # 更新：id定義で判定。textが必須。git, subidはペアで定義されていれば、その値で更新。
 
+    # Session ID認証
+    sessionid_valid = authorize_sessionid(request)
+
+    # Session ID認証成功
+    if ( sessionid_valid == True ):
+        pass
+    # Session ID認証失敗
+    else:
+        return generate_api_response_if_auth_failed()
+
+
+    ## Session ID認証成功の場合のメイン処理
     req_error = False;
     body = request.json
 
@@ -298,6 +394,19 @@ def api_update_tweet():
 
 @route('/api/1.0/search_tweets_by_gid.json', method=["POST"])
 def api_search_tweets_by_gid():
+
+    # Session ID認証
+    sessionid_valid = authorize_sessionid(request)
+
+    # Session ID認証成功
+    if ( sessionid_valid == True ):
+        pass
+    # Session ID認証失敗
+    else:
+        return generate_api_response_if_auth_failed()
+
+
+    ## Session ID認証成功の場合のメイン処理
     print("Content-Type: {}".format(request.get_header))
     body = request.json
     print(body)
@@ -321,6 +430,19 @@ def api_search_tweets_by_gid():
 
 @route('/api/1.0/delete_tweet.json', method=["POST"])
 def api_delete_tweet():
+
+    # Session ID認証
+    sessionid_valid = authorize_sessionid(request)
+
+    # Session ID認証成功
+    if ( sessionid_valid == True ):
+        pass
+    # Session ID認証失敗
+    else:
+        return generate_api_response_if_auth_failed()
+
+
+    ## Session ID認証成功の場合のメイン処理
     body = request.json
 
     id = body['id']
@@ -339,7 +461,19 @@ def api_delete_tweet():
 
 @route('/scripts/<name>')
 def scripts(name):
-    
+
+    # Session ID認証
+    sessionid_valid = authorize_sessionid(request)
+
+    # Session ID認証成功
+    if ( sessionid_valid == True ):
+        pass
+    # Session ID認証失敗
+    else:
+        return generate_api_response_if_auth_failed()
+
+
+    ## Session ID認証成功の場合のメイン処理
     return template('scripts/' + name)
     
 run(host='0.0.0.0', port=8081, debug=True)
