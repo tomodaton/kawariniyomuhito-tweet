@@ -17,7 +17,7 @@
     <form class="form-inline justify-content-center" action="/" method="POST">
         <input class="form-control mx-1" type="text" name="username" placeholder="username">
         <input class="form-control mx-1" type="password" name="password" placeholder="password">
-        <button type="submit" class="btn btn-primary mx-1">Login</button>
+        <button type="submit" class="btn btn-primary my-2">Login</button>
     </form>
     <div>{{login}}</div>
 </div>

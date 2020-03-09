@@ -63,7 +63,7 @@
         % for tweet in tweets[group['gid']]:
           <div class="tweet" id="tweet-{{tweet['id']}}">
               <div class="tweet-footer">{{tweet['subid']}}: {{tweet['status']}} <span class="tweet-save" id="tweet-save-{{tweet['id']}}">[S]</span><span class="tweet-delete" id="tweet-delete-{{tweet['id']}}">[D]</span></div>
-          <div class="tweet-text" contenteditable="True">{{tweet['text']}}</div>
+          <div class="tweet-text" contenteditable="True">{{!tweet['text']}}</div>
           </div>
         % end
           <p id="add-tweet-btn-{{group['gid']}}">ツイートを追加する [+]</p>

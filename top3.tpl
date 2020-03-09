@@ -8,12 +8,12 @@
 </head>
 <body>
 <div class="container">
-<div class="jumbotron jumbotron-fluid text-center" style="background-color: darkblue; color:#FFF;">
+<div class="jumbotron jumbotron-fluid text-center px-4" style="background-color: darkblue; color:#FFF;">
     <h1>代わりに読む人</h1>
     <p>Tweet Manager v0.0</p>
     <form class="form-inline justify-content-center" action="./top.html" method="get">
         <input type="date" name="from_date" class="form-control" value="{{dates[0]}}" size="10">-<input type="date" class="form-control" name ="to_date" value="{{dates[-1]}}" size="10">
-        &nbsp; <button class="btn btn-primary">View</button>
+        &nbsp; <button class="btn btn-primary my-2">View</button>
     </form>
 </div>
 <div class="row bg-white">
