@@ -1,0 +1,24 @@
+[uwsgi]
+ 
+# wsgiファイル
+wsgi-file=index.py
+callable=application
+ 
+# アクセス許可ホスト:ポート
+http=x.x.x.x:xxxx
+
+daemonize = /var/log/uwsgi.log
+log-reopen = true
+log-maxsize = 8000000
+logfile-chown = on
+logfile-chmod = 644
+
+
+current_release = dir
+chdir = %(current_release)
+wsgi-file=%(current_release)/index.py
+
+# pidファイルの位置を指定
+pidfile = /var/run/uwsgi/uwsgi.pid
+# 前回異常終了した場合、起動時にpidファイルをクリア
+vacuum = true

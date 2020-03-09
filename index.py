@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from bottle import route, run, request, response, HTTPResponse
+from bottle import route, run, request, response, HTTPResponse, default_app
 from bottle import template
 import json
 import sqlite3
@@ -10,6 +10,7 @@ import hashlib
 
 dbname = './example.db'
 # dbname = './schetweet.db'
+
 
 
 # 文字列(YYYY-MM-DD)で表される開始日付 from_date, 終了日付 to_dateから期間の日付リストを生成
@@ -476,4 +477,7 @@ def scripts(name):
     ## Session ID認証成功の場合のメイン処理
     return template('scripts/' + name)
     
-run(host='0.0.0.0', port=8081, debug=True)
+if __name__ == '__main__':
+    run(host='0.0.0.0', port=80, debug=True)
+else:
+    application= default_app()
