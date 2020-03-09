@@ -476,6 +476,24 @@ def scripts(name):
 
     ## Session ID認証成功の場合のメイン処理
     return template('scripts/' + name)
+
+@route('/fonts/<name>')
+def scripts(name):
+
+    # Session ID認証
+    sessionid_valid = authorize_sessionid(request)
+
+    # Session ID認証成功
+    if ( sessionid_valid == True ):
+        pass
+    # Session ID認証失敗
+    else:
+        return generate_api_response_if_auth_failed()
+
+
+    ## Session ID認証成功の場合のメイン処理
+    return template('fonts/' + name)
+
     
 if __name__ == '__main__':
     run(host='0.0.0.0', port=80, debug=True)
