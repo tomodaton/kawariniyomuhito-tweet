@@ -5,12 +5,12 @@ $(document).on('click', ".save-tweet", function(){
     /* データ作成 */
     // send: text, gid, subid
     var send_vals = {}
-    send_vals.id = $(this).parent().parent().find('.tweet-id').html()
+    send_vals.id = $(this).parent().parent().parent().find('.tweet-id').html()
     // alert(send_vals.id)
-    send_text = $(this).parent().parent().find(".card-text").html().replace(/<.*?>/g, '')
+    send_text = $(this).parent().parent().parent().find(".card-text").html().replace(/<.*?>/g, '')
     alert(send_text)
-    send_vals.text = send_text + '¥n'
-    $(this).parent().parent().find(".card-text").html(send_text)
+    send_vals.text = send_text
+    $(this).parent().parent().parent().find(".card-text").html(send_text)
     // send_vals.text = $(this).parent().parent().find(".card-body").find(".card-text").html()
     // receive: id
     // alert(send_vals.gid);
@@ -27,25 +27,34 @@ $(document).on('click', ".save-tweet", function(){
     })
     .done(function(data){
         // alert(data['id']);
-        _this.removeClass("btn-outline-danger")
-        _this.addClass("btn-outline-secondary")
+        _this.removeClass("text-danger")
+        _this.addClass("text-secondary")
 
     })
     .fail(function(){
-        _this.removeClass("btn-outline-secondary")
-        _this.addClass("btn-outline-danger")
+        _this.removeClass("text-secondary")
+        _this.addClass("text-danger")
         alert("Failed.")
     })
-    
-    
-    
 })
+
+$(document).on({
+    'mouseenter': function(){
+        $(this).removeClass("text-secondary");
+        $(this).addClass("text-active")
+    },
+    'mouseleave': function(){
+        $(this).removeClass("text-active");
+        $(this).addClass("text-secondary")
+    }
+}, ".save-tweet")
+
 $(document).on('click', ".del-tweet", function(){
     
     /* データ作成 */
     // send: text, gid, subid
     var send_vals = {}
-    send_vals.id = $(this).parent().parent().find('.tweet-id').html()
+    send_vals.id = $(this).parent().parent().parent().parent().find('.tweet-id').html()
     // alert(send_vals.id)
     
     _this = $(this)
@@ -60,15 +69,33 @@ $(document).on('click', ".del-tweet", function(){
     })
     .done(function(data){
         // alert(data['id']);
-        _this.parent().parent().remove()
+        _this.parent().parent().parent().parent().remove()
     })
     .fail(function(){
         alert("Failed.")
     })
-
-
-
 })
+
+$(document).on({
+    'mouseenter': function(){
+        $(this).removeClass("text-secondary");
+        $(this).addClass("text-active")
+    },
+    'mouseleave': function(){
+        $(this).removeClass("text-danger");
+        $(this).addClass("text-secondary")
+    }
+}, ".del-tweet")
+
+$(document).on({
+    'mouseenter': function(){
+        $(this).addClass("text-primary")
+    },
+    'mouseleave': function(){
+        $(this).removeClass("text-primary");
+    }
+}, ".fa-edit")
+    
 $(document).on('click', ".edit-tweet-group", function(){
     /* 設定編集モードのトグル（開始） */
     $(this).parent().parent().parent().find(".tweet-group-settings-confirmed").addClass("d-none")
@@ -143,9 +170,22 @@ $(document).on('click', ".set-tweet-group", function(){
 var card_template = '<div class="card my-1 shadow-sm">' +
             '<div class="tweet-id d-none"></div>' +
             '<div class="tweet-subid d-none"></div>' +
-            '<div class="card-header text-right small"><button class="btn btn-sm btn-outline-secondary save-tweet">Save</button> <button class="btn btn-sm btn-outline-secondary del-tweet">Delete</button></div>' +
+            '<div class="card-header text-right">' +
+                '<div class="row">' +
+                    '<div class="px-2 text-left">' +
+                        '<i class="fas fa-edit" style="color: #60a0ff"></i>&nbsp;&nbsp;' +
+                        '<i class="fas fa-retweet text-secondary"></i>' +
+                    '</div>' +
+                    '<div class="px-2 ml-auto">' +
+                        '<i class="far fa-trash-alt text-secondary del-tweet"></i>' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
             '<div class="card-body">' +
                 '<p class="card-text text-dark" contenteditable="true"></p>' +
+                '<div class="text-right">' +
+                    '<i class="fas fa-arrow-circle-up text-secondary save-tweet"></i>' +
+                '</div>' +
             '</div>' +
         '</div>'
 
@@ -185,8 +225,8 @@ $(document).on('click', ".add-tweet", function(){
         _this.prev().find(".tweet-id").html(data['id'])
     })
     .fail(function(){
-        _this.prev().find(".save-tweet").removeClass("btn-outline-secondary")
-        _this.prev().find(".save-tweet").addClass("btn-outline-danger")
+        _this.prev().find(".save-tweet").removeClass("text-secondary")
+        _this.prev().find(".save-tweet").addClass("text-danger")
         alert("Failed.")
     })
 })
