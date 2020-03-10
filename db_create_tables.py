@@ -23,7 +23,7 @@ def create_tables(cursor):
 
     cursor.execute("CREATE TABLE users (username TEXT PRIMARY KEY, password TEXT)")
     cursor.execute("CREATE TABLE sessions (sessionid TEXT, expire TEXT)")
-    cursor.execute("CREATE TABLE sched_tweets (id INTEGER PRIMARY KEY AUTOINCREMENT, gid INTEGER, subid INTEGER, text TEXT, tweet_id INTEGER, actual_date TEXT, status TEXT)")
+    cursor.execute("CREATE TABLE sched_tweets (id INTEGER PRIMARY KEY AUTOINCREMENT, gid INTEGER, subid INTEGER, text TEXT, rt_flag INTEGER, org_tweet_id INTEGER, tweet_id INTEGER, actual_date TEXT, status TEXT)")
     cursor.execute("CREATE TABLE sched_tweet_groups (gid INTEGER PRIMARY KEY AUTOINCREMENT,sched_start_date TEXT,interval INT,actual_start_date TEXT,status TEXT)")
     
 def commit(conn):
@@ -91,7 +91,7 @@ def confirm_group(cursor, gid):
 
 # Tweet操作
 def add_tweet(cursor, gid, subid, text):
-    result = cursor.execute("INSERT INTO sched_tweets(gid, subid, text, tweet_id, actual_date, status) VALUES (?, ?, ?, '', '', 'DRAFT')", (gid, subid, text)).lastrowid
+    result = cursor.execute("INSERT INTO sched_tweets(gid, subid, text, rt_flag, org_tweet_id, tweet_id, actual_date, status) VALUES (?, ?, ?, 0, '', '', '', 'DRAFT')", (gid, subid, text)).lastrowid
     return result
 
 def update_tweet(cursor, id, text):
@@ -106,7 +106,7 @@ def del_tweet(cursor, id):
     cursor.execute("DELETE FROM sched_tweets WHERE id=?", (id,))
 
 def search_tweets_by_date(conn, cursor, date):
-    cursor.execute("SELECT sched_tweet_groups.gid, sched_tweet_groups.sched_start_date, sched_tweet_groups.interval, sched_tweet_groups.status, sched_tweets.id, sched_tweets.subid, sched_tweets.text FROM sched_tweet_groups INNER JOIN sched_tweets ON sched_tweet_groups.gid = sched_tweets.gid WHERE sched_tweet_groups.sched_start_date <= ?" , (date,))
+    cursor.execute("SELECT sched_tweet_groups.gid, sched_tweet_groups.sched_start_date, sched_tweet_groups.interval, sched_tweet_groups.status, sched_tweets.id, sched_tweets.subid, sched_tweets.text, sched_tweets.rt_flag, sched_tweets.org_tweet_id FROM sched_tweet_groups INNER JOIN sched_tweets ON sched_tweet_groups.gid = sched_tweets.gid WHERE sched_tweet_groups.sched_start_date <= ?" , (date,))
     # import pdb; pdb.set_trace()
     result = cursor.fetchall()
     for row in result:
@@ -124,7 +124,7 @@ def search_tweets_by_gid(cursor, gid):
 
 # 日付を指定して予約後のツイートを抽出（自動tweetプログラム側から呼び出し）
 def list_sched_tweets(conn, cursor, datetime_s):
-    cursor.execute("SELECT sched_tweet_groups.gid, sched_tweet_groups.sched_start_date, sched_tweet_groups.interval, sched_tweet_groups.status, sched_tweets.id, sched_tweets.subid, sched_tweets.text FROM sched_tweet_groups INNER JOIN sched_tweets ON sched_tweet_groups.gid = sched_tweets.gid WHERE sched_tweet_groups.sched_start_date <= ? AND sched_tweet_groups.status = 'SCHED'" , (datetime_s,))
+    cursor.execute("SELECT sched_tweet_groups.gid, sched_tweet_groups.sched_start_date, sched_tweet_groups.interval, sched_tweet_groups.status, sched_tweets.id, sched_tweets.subid, sched_tweets.text, sched_tweets.rt_flag, sched_tweets.org_tweet_id FROM sched_tweet_groups INNER JOIN sched_tweets ON sched_tweet_groups.gid = sched_tweets.gid WHERE sched_tweet_groups.sched_start_date <= ? AND sched_tweet_groups.status = 'SCHED'" , (datetime_s,))
     # import pdb; pdb.set_trace()
     result = cursor.fetchall()
     # for row in result:

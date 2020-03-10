@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+<script src="https://kit.fontawesome.com/89affe3549.js" crossorigin="anonymous"></script>
 <title>代わりに読む人 Tweet Manager</title>
 </head>
 <body>
@@ -42,9 +43,34 @@
             <div class="card my-1 shadow-sm">
                 <div class="tweet-id d-none">{{tweet['id']}}</div>
                 <div class="tweet-subid d-none">{{tweet['subid']}}</div>
-                <div class="card-header text-right small"><button class="btn btn-sm btn-outline-secondary save-tweet">Save</button> <button class="btn btn-sm btn-outline-secondary del-tweet">Delete</button></div>
+                <div class="rt-flag d-none">{{tweet['rt_flag']}}</div>
+                <div class="card-header text-right">
+                    <div class="row">
+                        <div class="px-2 text-left">
+                            % if tweet['rt_flag'] == 0:
+                            <i class="fas fa-edit" style="color: #60a0ff"></i> 
+                            <i class="fas fa-retweet text-secondary"></i>
+                            % else:
+                            <i class="fas fa-edit text-secondary"></i> 
+                            <i class="fas fa-retweet" style="color: #60a0ff"></i>
+                            % end
+                        </div>
+                        <div class="px-2 ml-auto">
+                            <i class="far fa-trash-alt text-secondary del-tweet"></i>
+                        </div>
+                    </div>
+                </div>
                 <div class="card-body">
+                    % if tweet['rt_flag'] == 0:
                     <p class="card-text text-dark" contenteditable="true">{{tweet['text']}}</p>
+                    <p class="text-dark org-tweet-id d-none" contenteditable="true">{{tweet['org_tweet_id']}}</p>
+                    % else:
+                    <p class="card-text text-dark d-none" contenteditable="true">{{tweet['text']}}</p>
+                    <p class="text-dark org-tweet-id" contenteditable="true">{{tweet['org_tweet_id']}}</p>
+                    % end
+                    <div class="text-right">
+                        <i class="fas fa-arrow-circle-up text-secondary save-tweet"></i>
+                    </div>
                 </div>
             </div>
         % end
