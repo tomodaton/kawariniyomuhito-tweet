@@ -9,7 +9,7 @@ $(document).on('click', ".save-tweet", function(){
     // alert(send_vals.id)
     send_text = $(this).parent().parent().find(".card-text").html().replace(/<.*?>/g, '')
     alert(send_text)
-    send_vals.text = send_text + '¥n'
+    send_vals.text = send_text
     $(this).parent().parent().find(".card-text").html(send_text)
     // send_vals.text = $(this).parent().parent().find(".card-body").find(".card-text").html()
     // receive: id
