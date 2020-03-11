@@ -47,14 +47,15 @@ for gid in gids:
         res = tc.post_tweet(twitter, tuple['text'])
         # res = tc.post_tweet(twitter, tuple['text']+current_datetime)
         status_code = res.status_code
-        tweet_id = json.loads(res.text)['id']
 
         # 結果の記録
         # res のSuccess/Failed を個々のsched_tweetsに記録する。
         if status_code == 200:
             status = "SUCCESS"
+            tweet_id = json.loads(res.text)['id']
         else:
             status = "FAILED"        
+            tweet_id = 0
         conn = dbc.connect_db(dbname)
         cursor = dbc.get_cursor(conn)
         # 記録のDBへの保存

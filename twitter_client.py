@@ -47,6 +47,10 @@ def post_tweet(twitter, tweet):
     params = {"status": tweet}
 
     res = twitter.post(url_post, params =  params)
+
+    print(res.text)
+    print(json.loads(res.text))
+
     if res.status_code == 200:
         print("Success")
     else:
