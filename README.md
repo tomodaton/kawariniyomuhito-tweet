@@ -44,3 +44,5 @@
 - 実行 (> uwsgi uwsgi.ini)
 - 停止 (> uwsgi --stop /var/run/uwsgi/uwsgi.pid)
   
+## スクリーンショット
+https://github.com/tomodaton/kawariniyomuhito-tweet/blob/master/schetweet_screenshot.jpg
