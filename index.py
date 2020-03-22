@@ -8,143 +8,39 @@ import time, datetime
 import config
 import hashlib
 import twitter_client as tc
+import kw_sessions as kw_s
+import kw_util
+import kw_apis_main
 
 dbname = './example.db'
 # dbname = './schetweet.db'
 
 
-
-# 文字列(YYYY-MM-DD)で表される開始日付 from_date, 終了日付 to_dateから期間の日付リストを生成
-def generate_dates(from_date, to_date):
-    if from_date is None:
-        from_datetime = datetime.datetime.now()
-        from_date = from_datetime.strftime('%Y-%m-%d')
-    else:
-        from_datetime = datetime.datetime.strptime(from_date, '%Y-%m-%d')
-
-
-    if to_date is None:
-        to_datetime = from_datetime + datetime.timedelta(days=6)
-        to_date = to_datetime.strftime('%Y-%m-%d')
-    else:
-        to_datetime = datetime.datetime.strptime(to_date, '%Y-%m-%d')
-
-    dates = []
-    datetime_l = from_datetime
-    while datetime_l <= to_datetime:
-        dates.append(datetime_l.strftime('%Y-%m-%d'))
-        datetime_l = datetime_l + datetime.timedelta(days=1)
-    return dates
-
-def authorize(request):
-
-    """
-     　request に対して、(username, password)をチェックし、
-     　認証できたら True, そうでなければ False を返す。
-    """
-    
-    username = request.forms.get("username")
-    password = request.forms.get("password")
-
-    print("USERNAME: {}".format(username))
-    print("PASSWORD: {}".format(password))
-
-    # DBアクセス
-    conn = db.connect_db(dbname)
-    cursor = db.get_cursor(conn)
-    result = db.search_user_password(cursor, username, password)
-    conn.close()
-    
-    return result
-
-def authorize_sessionid(request):
-
-    # RequestのSession IDの取得 ##
-    sessionid = request.get_cookie("session")
-    print("Request Session ID: " + str(sessionid))
-
-    # DBアクセスし、Session IDをチェック
-    if sessionid != '' and sessionid != None:
-        # DBアクセス
-        conn = db.connect_db(dbname)
-        cursor = db.get_cursor(conn)
-        result = db.check_sessionid(cursor, sessionid)
-        # 有効期間の更新
-        if result == True:
-            db.extend_validate_period(cursor, sessionid)
-            db.commit(conn)
-        conn.close()
-        return result
-    else:
-        return False
-    
-def generate_sessionid():
-    
-    # session IDの生成 (hash関数を使う)
-    sessionid_src = str(datetime.datetime.now()) + config.RANDOM_SEED
-    print("Session ID src: " + sessionid_src)
-    sessionid = hashlib.sha256(sessionid_src.encode()).hexdigest()
-    print("New Session ID: " + sessionid)
-    # session IDのDBへの登録
-    # DBアクセス
-    conn = db.connect_db(dbname)
-    cursor = db.get_cursor(conn)
-    db.register_sessionid(cursor, sessionid)
-    db.commit(conn)
-    conn.close()
-
-    return sessionid
-
-def generate_response_if_auth_failed():
-    header = {"Content-Type": "application/text"}
-    res = HTTPResponse(status=302, headers=header)
-    res.set_header('location', '/')
-    return res
-
-def generate_api_response_if_auth_failed():
-    header = {"Content-Type": "application/text"}
-    res = HTTPResponse(status=302, headers=header)
-    return res
-
 @route('/', method=['GET', 'POST'])
 def index():
 
-    # login認証
-    login = authorize(request)
-    print("Login authorization:" +str(login))
-
-    # login認証に成功
-    if ( login ):
-        # Session ID生成
-        sessionid = generate_sessionid()
-        # Session IDセット
-        response.set_cookie("session", sessionid)
-
-    # login認証に失敗
-    else:
-        login = False
-
-    return template('index.tpl', login=login)
+    login_status = kw_s.login(request)
+    return template('index.tpl', login=login_status)
 
 
 @route('/top.html', method='GET')
 def top():
 
     # Session ID認証
-    sessionid_valid = authorize_sessionid(request)
+    sessionid_valid = kw_s.authorize_sessionid(request)
 
     # Session ID認証成功
     if ( sessionid_valid == True ):
         pass
     # Session ID認証失敗
     else:
-        return generate_response_if_auth_failed()
+        return kw_util.generate_response_if_auth_failed()
 
     ## Session ID認証成功の場合のresponse生成
     # 1. 表示期間の生成
     from_date = request.query.get('from_date')
     to_date = request.query.get('to_date')
-    dates = generate_dates(from_date, to_date)
+    dates = kw_util.generate_dates(from_date, to_date)
 
     # 2. 表示ツイートの抽出
     #  DBアクセス
@@ -163,316 +59,212 @@ def top():
             
     return template('top3.tpl', dates=dates, groups=groups, tweets=tweets)
 
-
 # API
-# ツイートグループ 追加/更新/検索(by date, by gid)/削除
-# ツイート 追加/更新/検索(by gid)/削除
-@route('/api/1.0/add_tweet_group.json', method=["POST"])
-def api_add_tweet_group():
+@route('/api/1.0/<uri>', method=["POST"])
+def api_universal(uri):
 
     # Session ID認証
-    sessionid_valid = authorize_sessionid(request)
+    sessionid_valid = kw_s.authorize_sessionid(request)
 
     # Session ID認証成功
     if ( sessionid_valid == True ):
         pass
     # Session ID認証失敗
     else:
-        return generate_api_response_if_auth_failed()
-
-
-    ## Session ID認証成功の場合のメイン処理
-    body = request.json
-
-    sched_start_date = body['sched_start_date']
-    interval = body['interval']
+        return kw_s.generate_api_response_if_auth_failed()
     
-    conn = db.connect_db(dbname)
-    cursor = db.get_cursor(conn)
-    result = db.add_group(cursor, sched_start_date, interval)
-    db.commit(conn)    
-    conn.close()
+    '''
+        Session ID認証成功の場合の各API Main処理
+    '''
     
-    print("Added new tweet group with gid {}".format(result))
-    
-    header = {"Content-Type": "application/json"}
-    res = HTTPResponse(status=200, body=json.dumps({'gid': result}), headers=header)    
-    return res
+    # Tweet Group 追加
+    if uri == 'add_tweet_group.json':
 
-@route('/api/1.0/update_tweet_group.json', method=["POST"])
-def api_update_tweet_group():
+        res = kw_apis_main.add_tweet_group(request)
+        return res
 
-    # Session ID認証
-    sessionid_valid = authorize_sessionid(request)
-
-    # Session ID認証成功
-    if ( sessionid_valid == True ):
-        pass
-    # Session ID認証失敗
-    else:
-        return generate_api_response_if_auth_failed()
-
-
-    ## Session ID認証成功の場合のメイン処理
-    print("Content-Type: {}".format(request.get_header))
-    body = request.json
-    print(body)
-
-    gid = body['gid']
-    sched_start_date = body['sched_start_date']
-    interval = body['interval']
-    status = body['status']
-
-    conn = db.connect_db(dbname)
-    cursor = db.get_cursor(conn)
-    result = db.update_tweet_group(conn, cursor, gid, sched_start_date, interval, status)
-    conn.close()
-    print("Updated the tweet group with gid: {}, sched_start_date: {}, interval: {}, status: {}".format(gid, sched_start_date, interval, status))
-
-    header = {"Content-Type": "application/text"}
-    res = HTTPResponse(status=200, headers=header)    
-    return res
-
-
-@route('/api/1.0/search_tweet_groups_by_date', method=["POST"])
-def api_search_tweet_groups_by_date():
-
-    # Session ID認証
-    sessionid_valid = authorize_sessionid(request)
-
-    # Session ID認証成功
-    if ( sessionid_valid == True ):
-        pass
-    # Session ID認証失敗
-    else:
-        return generate_api_response_if_auth_failed()
-
-
-    ## Session ID認証成功の場合のメイン処理
-    print("Content-Type: {}".format(request.get_header))
-    body = request.json
-    print(body)
-    
-    date = body["date"]
-    
-    conn = db.connect_db(dbname)
-    cursor = db.get_cursor(conn)
-    # cursor.execute("SELECT * FROM sched_tweet_groups")
-    result = db.search_group_by_date(cursor, date)
-    # import pdb; pdb.set_trace()
+    # Tweet Group 更新
+    elif uri == 'update_tweet_group.json':
         
-    conn.close()
+        res = kw_apis_main.update_tweet_group(request)
+        return res
 
-    header = {"Content-Type": "application/json"}
-    res = HTTPResponse(status=200, body=json.dumps(result), headers=header)    
-    return res
+    # Tweet Group 検索(by date, by gid)
+    elif uri == 'search_tweet_groups_by_date':
+        print("Content-Type: {}".format(request.get_header))
+        body = request.json
+        print(body)
 
-@route('/api/1.0/delete_tweet_group.json', method=["POST"])
-def api_delete_tweet_group():
+        date = body["date"]
 
-    # Session ID認証
-    sessionid_valid = authorize_sessionid(request)
+        conn = db.connect_db(dbname)
+        cursor = db.get_cursor(conn)
+        # cursor.execute("SELECT * FROM sched_tweet_groups")
+        result = db.search_group_by_date(cursor, date)
+        # import pdb; pdb.set_trace()
 
-    # Session ID認証成功
-    if ( sessionid_valid == True ):
-        pass
-    # Session ID認証失敗
-    else:
-        return generate_api_response_if_auth_failed()
+        conn.close()
+
+        header = {"Content-Type": "application/json"}
+        res = HTTPResponse(status=200, body=json.dumps(result), headers=header)    
+        return res
+
+    # Tweet Group 削除
+    elif uri == 'delete_tweet_group.json':
+
+        body = request.json
+
+        gid = body['gid']
+
+        conn = db.connect_db(dbname)
+        cursor = db.get_cursor(conn)
+        result = db.del_group(cursor, gid)
+        db.commit(conn)    
+        conn.close()
+
+        print("Deleted the tweet group with gid {}".format(result))
+
+        header = {"Content-Type": "application/text"}
+        res = HTTPResponse(status=200, headers=header)    
+        return res
+
+    elif uri == 'update_tweet.json':
+        
+        # Tweet(RT, 画像付TweetもTweetとして取り扱う) 新規登録・更新用API。
+        # ポストされるデータのidの定義の有無で新規または更新を判定。
+        # 新規登録：
+        #   id未定義の場合。rt_flagが必須(0: tweet, 1: RT)
+        #   gid(推奨 default=0), subid(推奨 default=0), text(推奨 default='')、org_tweet_id(推奨 default=0) 。
+        #   idを採番して返す。
+        # 更新：
+        #   id定義の場合。rt_flagが必須(0: tweet, 1: RT)
+        #   tweetの場合、text、retweetの場合、org_tweet_idが推奨（ブランクの場合は空欄または0で更新される）
+        #   gid, subidは無視。
+
+        ## Session ID認証成功の場合のメイン処理
+        req_error = False;
+        body = request.json
+
+        # 入力のチェック
+        try:
+            id = body['id']
+            new_tweet = False;
+        except KeyError:
+            new_tweet = True;    
+
+        # rt_flag (必須)
+        try:
+            rt_flag = int(body['rt_flag'])
+        except KeyError:
+            req_error = True;
 
 
-    ## Session ID認証成功の場合のメイン処理
-    body = request.json
+        if rt_flag == 1:
+            try:
+                org_tweet_id = body['org_tweet_id']
+            except KeyError:
+                org_tweet_id = 0;
+        elif rt_flag == 0:
+            try:
+                text = body['text']
+            except KeyError:
+                text = '';
 
-    gid = body['gid']
+        conn = db.connect_db(dbname)
+        cursor = db.get_cursor(conn)
+
+        # import pdb; pdb.set_trace()
+
+        if new_tweet == True:  # 新規登録
+            try:
+                gid = body['gid']
+            except KeyError:
+                gid = 0;
+
+            try:
+                subid = body['subid']
+            except KeyError:
+                subid = 0;
+
+            if rt_flag == 0:
+                id = db.add_tweet(cursor, gid, subid, text)  # return gid
+                print("Added new tweet {} with gid {}, subid {}, and text {}".format(id, gid, subid, text))
+            elif rt_flag == 1:
+                # Retweet対象のtweetのテキストを取得
+                # org_tweet_text = tc.xxxx()
+                org_tweet_text = "abcdef"
+                id = db.add_retweet(cursor, gid, subid, org_tweet_id, org_tweet_text)
+                print("Added new retweet {} with gid {}, subid {}, and org_tweet_id {} ({})".format(id, gid, subid, org_tweet_id, org_tweet_text))
+        else:  # 更新
+            if rt_flag == 0:
+                id = db.update_tweet(cursor, id, text)
+                print("Updated the tweet with id {}, and text {}".format(id, text))
+            elif rt_flag == 1:
+                # Retweet対象のtweetのテキストを取得
+                # org_tweet_text = tc.xxxx()
+                org_tweet_text = "abcdef"
+                id = db.update_retweet(cursor, id, org_tweet_id, org_tweet_text)
+                print("Updated the retweet with id {}, and org_tweet_id {}({})".format(id, org_tweet_id, org_tweet_text))
+
+        db.commit(conn)
+        conn.close()
+
+        header = {"Content-Type": "application/json"}
+        res = HTTPResponse(status=200, body=json.dumps({'id': id}), headers=header)    
+        return res
     
-    conn = db.connect_db(dbname)
-    cursor = db.get_cursor(conn)
-    result = db.del_group(cursor, gid)
-    db.commit(conn)    
-    conn.close()
+    elif uri == 'search_tweets_by_gid.json':
+
+        print("Content-Type: {}".format(request.get_header))
+        body = request.json
+        print(body)
+
+        gid = body["gid"]
+
+        conn = db.connect_db(dbname)
+        cursor = db.get_cursor(conn)
+        # cursor.execute("SELECT * FROM sched_tweet_groups")
+        result = db.search_tweets_by_gid(cursor, gid)
+        import pdb; pdb.set_trace()
+
+        conn.close()
+
+        print("Search tweets with gid {}.".format(gid))
+
+        header = {"Content-Type": "application/json"}
+        res = HTTPResponse(status=200, body=json.dumps(result), headers=header)    
+        return res
     
-    print("Deleted the tweet group with gid {}".format(result))
-    
-    header = {"Content-Type": "application/text"}
-    res = HTTPResponse(status=200, headers=header)    
-    return res
+    elif uri == 'delete_tweet.json':
 
-@route('/api/1.0/update_tweet.json', method=["POST"])
-def api_update_tweet():
-    # Tweet(RT, 画像付TweetもTweetとして取り扱う) 新規登録・更新用API。
-    # ポストされるデータのidの定義の有無で新規または更新を判定。
-    # 新規登録：
-    #   id未定義の場合。rt_flagが必須(0: tweet, 1: RT)
-    #   gid(推奨 default=0), subid(推奨 default=0), text(推奨 default='')、org_tweet_id(推奨 default=0) 。
-    #   idを採番して返す。
-    # 更新：
-    #   id定義の場合。rt_flagが必須(0: tweet, 1: RT)
-    #   tweetの場合、text、retweetの場合、org_tweet_idが推奨（ブランクの場合は空欄または0で更新される）
-    #   gid, subidは無視。
+        body = request.json
 
-    # Session ID認証
-    sessionid_valid = authorize_sessionid(request)
-
-    # Session ID認証成功
-    if ( sessionid_valid == True ):
-        pass
-    # Session ID認証失敗
-    else:
-        return generate_api_response_if_auth_failed()
-
-
-    ## Session ID認証成功の場合のメイン処理
-    req_error = False;
-    body = request.json
-
-    # 入力のチェック
-    try:
         id = body['id']
-        new_tweet = False;
-    except KeyError:
-        new_tweet = True;    
 
-    # rt_flag (必須)
-    try:
-        rt_flag = int(body['rt_flag'])
-    except KeyError:
-        req_error = True;
+        conn = db.connect_db(dbname)
+        cursor = db.get_cursor(conn)
+        db.del_tweet(cursor, id)
+        db.commit(conn)
+        conn.close()
 
-        
-    if rt_flag == 1:
-        try:
-            org_tweet_id = body['org_tweet_id']
-        except KeyError:
-            org_tweet_id = 0;
-    elif rt_flag == 0:
-        try:
-            text = body['text']
-        except KeyError:
-            text = '';
-        
-    conn = db.connect_db(dbname)
-    cursor = db.get_cursor(conn)
+        print("Deleted the tweet with id {}".format(id))
 
-    # import pdb; pdb.set_trace()
-    
-    if new_tweet == True:  # 新規登録
-        try:
-            gid = body['gid']
-        except KeyError:
-            gid = 0;
-
-        try:
-            subid = body['subid']
-        except KeyError:
-            subid = 0;
-
-        if rt_flag == 0:
-            id = db.add_tweet(cursor, gid, subid, text)  # return gid
-            print("Added new tweet {} with gid {}, subid {}, and text {}".format(id, gid, subid, text))
-        elif rt_flag == 1:
-            # Retweet対象のtweetのテキストを取得
-            # org_tweet_text = tc.xxxx()
-            org_tweet_text = "abcdef"
-            id = db.add_retweet(cursor, gid, subid, org_tweet_id, org_tweet_text)
-            print("Added new retweet {} with gid {}, subid {}, and org_tweet_id {} ({})".format(id, gid, subid, org_tweet_id, org_tweet_text))
-    else:  # 更新
-        if rt_flag == 0:
-            id = db.update_tweet(cursor, id, text)
-            print("Updated the tweet with id {}, and text {}".format(id, text))
-        elif rt_flag == 1:
-            # Retweet対象のtweetのテキストを取得
-            # org_tweet_text = tc.xxxx()
-            org_tweet_text = "abcdef"
-            id = db.update_retweet(cursor, id, org_tweet_id, org_tweet_text)
-            print("Updated the retweet with id {}, and org_tweet_id {}({})".format(id, org_tweet_id, org_tweet_text))
-            
-    db.commit(conn)
-    conn.close()
-    
-    header = {"Content-Type": "application/json"}
-    res = HTTPResponse(status=200, body=json.dumps({'id': id}), headers=header)    
-    return res
-
-@route('/api/1.0/search_tweets_by_gid.json', method=["POST"])
-def api_search_tweets_by_gid():
-
-    # Session ID認証
-    sessionid_valid = authorize_sessionid(request)
-
-    # Session ID認証成功
-    if ( sessionid_valid == True ):
-        pass
-    # Session ID認証失敗
-    else:
-        return generate_api_response_if_auth_failed()
-
-
-    ## Session ID認証成功の場合のメイン処理
-    print("Content-Type: {}".format(request.get_header))
-    body = request.json
-    print(body)
-    
-    gid = body["gid"]
-    
-    conn = db.connect_db(dbname)
-    cursor = db.get_cursor(conn)
-    # cursor.execute("SELECT * FROM sched_tweet_groups")
-    result = db.search_tweets_by_gid(cursor, gid)
-    import pdb; pdb.set_trace()
-        
-    conn.close()
-    
-    print("Search tweets with gid {}.".format(gid))
-
-    header = {"Content-Type": "application/json"}
-    res = HTTPResponse(status=200, body=json.dumps(result), headers=header)    
-    return res
-
-
-@route('/api/1.0/delete_tweet.json', method=["POST"])
-def api_delete_tweet():
-
-    # Session ID認証
-    sessionid_valid = authorize_sessionid(request)
-
-    # Session ID認証成功
-    if ( sessionid_valid == True ):
-        pass
-    # Session ID認証失敗
-    else:
-        return generate_api_response_if_auth_failed()
-
-
-    ## Session ID認証成功の場合のメイン処理
-    body = request.json
-
-    id = body['id']
-    
-    conn = db.connect_db(dbname)
-    cursor = db.get_cursor(conn)
-    db.del_tweet(cursor, id)
-    db.commit(conn)
-    conn.close()
-    
-    print("Deleted the tweet with id {}".format(id))
-    
-    header = {"Content-Type": "application/json"}
-    res = HTTPResponse(status=200, body=json.dumps({'id': id}), headers=header)    
-    return res
+        header = {"Content-Type": "application/json"}
+        res = HTTPResponse(status=200, body=json.dumps({'id': id}), headers=header)    
+        return res
 
 @route('/scripts/<name>')
 def scripts(name):
 
     # Session ID認証
-    sessionid_valid = authorize_sessionid(request)
+    sessionid_valid = kw_s.authorize_sessionid(request)
 
     # Session ID認証成功
     if ( sessionid_valid == True ):
         pass
     # Session ID認証失敗
     else:
-        return generate_api_response_if_auth_failed()
+        return kw_util.generate_api_response_if_auth_failed()
 
 
     ## Session ID認証成功の場合のメイン処理
@@ -482,14 +274,14 @@ def scripts(name):
 def scripts(name):
 
     # Session ID認証
-    sessionid_valid = authorize_sessionid(request)
+    sessionid_valid = kw_s.authorize_sessionid(request)
 
     # Session ID認証成功
     if ( sessionid_valid == True ):
         pass
     # Session ID認証失敗
     else:
-        return generate_api_response_if_auth_failed()
+        return kw_util.generate_api_response_if_auth_failed()
 
 
     ## Session ID認証成功の場合のメイン処理
