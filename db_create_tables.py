@@ -95,8 +95,8 @@ def add_tweet(cursor, gid, subid, text):
     return result
 
 def update_tweet(cursor, id, text):
-    # import pdb; pdb.set_trace()    
     cursor.execute("UPDATE sched_tweets SET text = ? WHERE id = ?", (text, id))
+    cursor.execute("UPDATE sched_tweets SET rt_flag = 0, org_tweet_id = 0 WHERE id = ?", (id,))
     return id
 
 def update_tweet_status(cursor, id, tweet_id, status):
@@ -122,10 +122,21 @@ def search_tweets_by_gid(cursor, gid):
         tweets.append(dict(row)) 
     return tweets
 
+# Retweet操作(登録更新以外(Delete/Update_status)はTweet操作で実行可能)
+def add_retweet(cursor, gid, subid, org_tweet_id):
+
+    result = cursor.execute("INSERT INTO sched_tweets(gid, subid, text, rt_flag, org_tweet_id, tweet_id, actual_date, status) VALUES (?, ?, '', 1, ?, '', '', 'DRAFT')", (gid, subid, org_tweet_id)).lastrowid
+    return result
+
+def update_retweet(cursor, id, org_tweet_id):
+    cursor.execute("UPDATE sched_tweets SET org_tweet_id = ? WHERE id = ?", (org_tweet_id, id))
+    cursor.execute("UPDATE sched_tweets SET rt_flag = 1, text = '' WHERE id = ?", (id,))
+    return id
+
+
 # 日付を指定して予約後のツイートを抽出（自動tweetプログラム側から呼び出し）
 def list_sched_tweets(conn, cursor, datetime_s):
     cursor.execute("SELECT sched_tweet_groups.gid, sched_tweet_groups.sched_start_date, sched_tweet_groups.interval, sched_tweet_groups.status, sched_tweets.id, sched_tweets.subid, sched_tweets.text, sched_tweets.rt_flag, sched_tweets.org_tweet_id FROM sched_tweet_groups INNER JOIN sched_tweets ON sched_tweet_groups.gid = sched_tweets.gid WHERE sched_tweet_groups.sched_start_date <= ? AND sched_tweet_groups.status = 'SCHED'" , (datetime_s,))
-    # import pdb; pdb.set_trace()
     result = cursor.fetchall()
     # for row in result:
     #     print(json.dumps(dict(row)))
@@ -161,7 +172,7 @@ if __name__ == '__main__':
     while 1:
         print()
         print()
-        mode = input('Init: 0, Show Tables: 01, Add Users: 02, Add Sessions: 03, Add/Show/Search/Delete Group: 11/12/13/19, Add/Show/Delete Tweet: 21/22/23, Search Tweets/Scheduled Tweets: 31/32, Set Scheduled: 40, Exit: 9>> ')
+        mode = input('Init: 0, Show Tables: 01, Add/Show Users: 02/03, Add/Show Sessions: 05/06, Add/Show/Search/Delete Group: 11/12/13/19, Add/Show/Update/Delete Tweet: 21/22/23/24, Add/Show/Update/Detete Retwwet: 25/26/27/28, Search Tweets/Scheduled Tweets: 31/32, Set Scheduled: 40, Exit: 9>> ')
         print(mode)
 
         if mode == '0':
@@ -180,10 +191,18 @@ if __name__ == '__main__':
             for item in cursor.fetchall():
                 print(dict(item))
         elif mode == '03':
+            cursor.execute("SELECT * FROM users")
+            for item in cursor.fetchall():
+                print(dict(item))
+        elif mode == '05':
             sessionid = input('sessionid >>')
             expire = input('expire >>')
             cursor.execute("INSERT INTO sessions VALUES (?, ?)", (sessionid, expire))
             conn.commit()
+            cursor.execute("SELECT * FROM sessions")
+            for item in cursor.fetchall():
+                print(dict(item))
+        elif mode == '06':
             cursor.execute("SELECT * FROM sessions")
             for item in cursor.fetchall():
                 print(dict(item))
@@ -224,8 +243,35 @@ if __name__ == '__main__':
                 print(dict(item))
         elif mode == '23':
             id = input('id >>')
+            text = input('text >>')
+            update_tweet(cursor, id, text)
+            conn.commit()
+        elif mode == '24':
+            id = input('id >>')
             del_tweet(cursor, id)
             conn.commit()
+
+        elif mode == '25':
+            gid = input('gid >>')
+            subid = input ('subid >>')
+            org_tweet_id = input('Tweet ID to retweet >>')
+            add_retweet(cursor, gid, subid, org_tweet_id)
+            conn.commit()
+        elif mode == '26':
+            cursor.execute("SELECT * FROM sched_tweets")
+            for item in cursor.fetchall():
+                print(item)
+                print(dict(item))
+        elif mode == '27':
+            id = input('id >>')
+            org_tweet_id = input('Tweet ID to retweet >>')
+            update_retweet(cursor, id, org_tweet_id)
+            conn.commit()
+        elif mode == '28':
+            id = input('id >>')
+            del_tweet(cursor, id)
+            conn.commit()
+            
         elif mode == '31':
             date = input('date >>')
             cursor = get_cursor(conn)

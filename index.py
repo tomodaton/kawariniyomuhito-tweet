@@ -297,46 +297,18 @@ def api_delete_tweet_group():
     res = HTTPResponse(status=200, headers=header)    
     return res
 
-# 廃止する？ -> update_tweet.json に統合
-@route('/api/1.0/add_tweet.json', method=["POST"])
-def api_add_tweet():
-
-    # Session ID認証
-    sessionid_valid = authorize_sessionid(request)
-
-    # Session ID認証成功
-    if ( sessionid_valid == True ):
-        pass
-    # Session ID認証失敗
-    else:
-        return generate_api_response_if_auth_failed()
-
-
-    ## Session ID認証成功の場合のメイン処理
-    body = request.json
-
-    gid = body['gid']
-    subid = body['subid']
-    text = body['text']
-    
-    conn = db.connect_db(dbname)
-    cursor = db.get_cursor(conn)
-    result = db.add_tweet(cursor, gid, subid, text)
-    
-    db.commit(conn)    
-    conn.close()
-    
-    print("Added new tweet with gid {}, subid {}, and text {}".format(result, subid, text))
-    
-    header = {"Content-Type": "application/json"}
-    res = HTTPResponse(status=200, body=json.dumps({'id': result}), headers=header)    
-    return res
-
 @route('/api/1.0/update_tweet.json', method=["POST"])
 def api_update_tweet():
-    # 新規登録、更新を兼ねる。
-    # 新規登録：id未定義で判定。gid, subid, text が必須。idを採番して返す。
-    # 更新：id定義で判定。textが必須。git, subidはペアで定義されていれば、その値で更新。
+    # Tweet(RT, 画像付TweetもTweetとして取り扱う) 新規登録・更新用API。
+    # ポストされるデータのidの定義の有無で新規または更新を判定。
+    # 新規登録：
+    #   id未定義の場合。rt_flagが必須(0: tweet, 1: RT)
+    #   gid(推奨 default=0), subid(推奨 default=0), text(推奨 default='')、org_tweet_id(推奨 default=0) 。
+    #   idを採番して返す。
+    # 更新：
+    #   id定義の場合。rt_flagが必須(0: tweet, 1: RT)
+    #   tweetの場合、text、retweetの場合、org_tweet_idが推奨（ブランクの場合は空欄または0で更新される）
+    #   gid, subidは無視。
 
     # Session ID認証
     sessionid_valid = authorize_sessionid(request)
@@ -360,30 +332,53 @@ def api_update_tweet():
     except KeyError:
         new_tweet = True;    
 
+    # rt_flag (必須)
     try:
-        text = body['text']
+        rt_flag = int(body['rt_flag'])
     except KeyError:
         req_error = True;
+
+        
+    if rt_flag == 1:
+        try:
+            org_tweet_id = body['org_tweet_id']
+        except KeyError:
+            org_tweet_id = 0;
+    elif rt_flag == 0:
+        try:
+            text = body['text']
+        except KeyError:
+            text = '';
         
     conn = db.connect_db(dbname)
     cursor = db.get_cursor(conn)
-        
+
+    # import pdb; pdb.set_trace()
+    
     if new_tweet == True:  # 新規登録
         try:
             gid = body['gid']
         except KeyError:
-            req_error = True;
+            gid = 0;
+
         try:
             subid = body['subid']
         except KeyError:
-            req_error = True;
-        
-        id = db.add_tweet(cursor, gid, subid, text)  # return gid
-        print("Added new tweet {} with gid {}, subid {}, and text {}".format(id, gid, subid, text))
-        
+            subid = 0;
+
+        if rt_flag == 0:
+            id = db.add_tweet(cursor, gid, subid, text)  # return gid
+            print("Added new tweet {} with gid {}, subid {}, and text {}".format(id, gid, subid, text))
+        elif rt_flag == 1:
+            id = db.add_retweet(cursor, gid, subid, org_tweet_id)
+            print("Added new retweet {} with gid {}, subid {}, and org_tweet_id {}".format(id, gid, subid, org_tweetid))
     else:  # 更新
-        id = db.update_tweet(cursor, id, text)
-        print("Updated the tweet with id {}, and text {}".format(id, text))
+        if rt_flag == 0:
+            id = db.update_tweet(cursor, id, text)
+            print("Updated the tweet with id {}, and text {}".format(id, text))
+        elif rt_flag == 1:
+            id = db.update_retweet(cursor, id, org_tweet_id)
+            print("Updated the retweet with id {}, and org_tweet_id {}".format(id, org_tweet_id))
             
     db.commit(conn)
     conn.close()
@@ -391,7 +386,6 @@ def api_update_tweet():
     header = {"Content-Type": "application/json"}
     res = HTTPResponse(status=200, body=json.dumps({'id': id}), headers=header)    
     return res
-
 
 @route('/api/1.0/search_tweets_by_gid.json', method=["POST"])
 def api_search_tweets_by_gid():

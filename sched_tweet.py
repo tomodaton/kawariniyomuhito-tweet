@@ -31,21 +31,23 @@ for tuple in groups:
     gids.append(tuple['gid'])
     intervals[tuple['gid']] = tuple['interval']
 
+print("gids:")
 print(gids)
 
 for gid in gids:
     tweets[gid] = dbc.search_tweets_by_gid(cursor, gid)
+    print("tweets")
     print(tweets)
 dbc.close_db(conn)
-
 
 # 抽出したtweetをtweet.
 for gid in gids:
     for tuple in tweets[gid]:
         # Tweet処理
-        # res = tc.post_tweet(twitter, tuple['text']+current_datetime)
-        res = tc.post_tweet(twitter, tuple['text'])
-        # res = tc.post_tweet(twitter, tuple['text']+current_datetime)
+        if tuple['rt_flag'] == 0:
+            res = tc.post_tweet(twitter, tuple['text'])
+        elif tuple['rt_flag'] == 1:
+            res = tc.retweet(twitter, tuple['org_tweet_id'])
         status_code = res.status_code
 
         # 結果の記録

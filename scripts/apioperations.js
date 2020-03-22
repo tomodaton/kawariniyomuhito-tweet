@@ -2,37 +2,78 @@ $(document).on('click', ".save-tweet", function(){
     // alert($(this).parent().parent().find(".card-body").find(".card-text").html())
     // $(this).parent().parent().find(".card-body").find(".card-text").removeAttr('contenteditable')
     
-    /* データ作成 */
-    // send: text, gid, subid
-    var send_vals = {}
-    send_vals.id = $(this).parent().parent().parent().find('.tweet-id').html()
-    // alert(send_vals.id)
-    send_text = $(this).parent().parent().parent().find(".card-text").html().replace(/<.*?>/g, '')
-    alert(send_text)
-    send_vals.text = send_text
-    $(this).parent().parent().parent().find(".card-text").html(send_text)
-    // send_vals.text = $(this).parent().parent().find(".card-body").find(".card-text").html() // receive: id // alert(send_vals.gid); 
-    _this = $(this)
-    /* データ送信 */
-    $.ajax({
-      url: '/api/1.0/update_tweet.json',
-      type: 'POST',
-      contentType: 'application/JSON',
-      data: JSON.stringify(send_vals),
-      timeout: 10000,
-      datatype: 'json'
-    })
-    .done(function(data){
-        // alert(data['id']);
-        _this.removeClass("text-danger")
-        _this.addClass("text-secondary")
+    /* Tweet/Retweet判定 */
+    rt_flag = $(this).parent().parent().parent().find('.rt-flag').html()
+    if ( rt_flag == 0 ) {
+        alert("Tweet")
+    } else {
+        alert("Retweet")
+    }
+    
+    if ( rt_flag == 0 ) {
+        /* データ作成 */
+        // send: text, gid, subid
+        var send_vals = {}
+        send_vals.id = $(this).parent().parent().parent().find('.tweet-id').html()
+        // alert(send_vals.id)
+        send_vals.rt_flag = 0
+        send_text = $(this).parent().parent().find(".tweet-text").val().replace(/<.*?>/g, '')
+        alert(send_text)
+        send_vals.text = send_text
+        $(this).parent().parent().parent().find(".tweet-text").val(send_text)
+        // send_vals.text = $(this).parent().parent().find(".card-body").find(".card-text").html() // receive: id // alert(send_vals.gid); 
+        _this = $(this)
+        /* データ送信 */
+        $.ajax({
+          url: '/api/1.0/update_tweet.json',
+          type: 'POST',
+          contentType: 'application/JSON',
+          data: JSON.stringify(send_vals),
+          timeout: 10000,
+          datatype: 'json'
+        })
+        .done(function(data){
+            // alert(data['id']);
+            _this.removeClass("text-danger")
+            _this.addClass("text-secondary")
 
-    })
-    .fail(function(){
-        _this.removeClass("text-secondary")
-        _this.addClass("text-danger")
-        alert("Failed.")
-    })
+        })
+        .fail(function(){
+            _this.removeClass("text-secondary")
+            _this.addClass("text-danger")
+            alert("Failed.")
+        })
+    } else {
+        /* データ作成 */
+        // send: org_tweet_id, gid, subid
+        var send_vals = {}
+        send_vals.id = $(this).parent().parent().parent().find('.tweet-id').html()
+        send_vals.rt_flag = 1
+        send_vals.org_tweet_id = $(this).parent().parent().find(".org-tweet-id").val()
+        alert(send_vals.org_tweet_id)
+        // send_vals.text = $(this).parent().parent().find(".card-body").find(".card-text").html() // receive: id // alert(send_vals.gid); 
+        _this = $(this)
+        /* データ送信 */
+        $.ajax({
+          url: '/api/1.0/update_tweet.json',
+          type: 'POST',
+          contentType: 'application/JSON',
+          data: JSON.stringify(send_vals),
+          timeout: 10000,
+          datatype: 'json'
+        })
+        .done(function(data){
+            // alert(data['id']);
+            _this.removeClass("text-danger")
+            _this.addClass("text-secondary")
+
+        })
+        .fail(function(){
+            _this.removeClass("text-secondary")
+            _this.addClass("text-danger")
+            alert("Failed.")
+        })
+    }  
 })
 
 $(document).on({
@@ -92,7 +133,51 @@ $(document).on({
         $(this).removeClass("text-primary");
     }
 }, ".fa-edit")
-    
+
+$(document).on({
+    'mouseenter': function(){
+        $(this).addClass("text-primary")
+    },
+    'mouseleave': function(){
+        $(this).removeClass("text-primary");
+    }
+}, ".fa-retweet")
+
+$(document).on('click', ".fa-edit", function(){
+    $(this).parent().parent().parent().parent().find(".rt-flag").html("0")
+
+    /* Tweet text と RTするTweetの org-tweet-idの表示をトグル */
+    $(this).parent().parent().parent().parent().find(".tweet-text").addClass("d-block")
+    $(this).parent().parent().parent().parent().find(".tweet-text").removeClass("d-none")
+    $(this).parent().parent().parent().parent().find(".org-tweet-id").addClass("d-none")
+    $(this).parent().parent().parent().parent().find(".org-tweet-id").removeClass("d-block")
+
+    /* Tweet(edit)ボタンとRetweetボタンのトグル */
+    $(this).parent().find(".fa-retweet").removeClass("text-primary")
+    $(this).parent().find(".fa-retweet").addClass("text-secondary")
+    $(this).parent().find(".fa-retweet").css("color", "");
+    $(this).removeClass("text-secondary");
+    $(this).css("color", "#60a0ff")
+})
+
+$(document).on('click', ".fa-retweet", function(){
+    $(this).parent().parent().parent().parent().find(".rt-flag").html("1")
+
+    /* Tweet text と RTするTweetの org-tweet-idの表示をトグル */
+    $(this).parent().parent().parent().parent().find(".org-tweet-id").addClass("d-block")
+    $(this).parent().parent().parent().parent().find(".org-tweet-id").removeClass("d-none")
+    $(this).parent().parent().parent().parent().find(".tweet-text").addClass("d-none")
+    $(this).parent().parent().parent().parent().find(".tweet-text").removeClass("d-block")
+
+    /* Tweet(edit)ボタンとRetweetボタンのトグル */
+    $(this).parent().find(".fa-edit").removeClass("text-primary")
+    $(this).parent().find(".fa-edit").addClass("text-secondary")
+    $(this).parent().find(".fa-edit").css("color", "");
+    $(this).removeClass("text-secondary");
+    $(this).css("color", "#60a0ff")
+})
+
+
 $(document).on('click', ".edit-tweet-group", function(){
     /* 設定編集モードのトグル（開始） */
     $(this).parent().parent().parent().find(".tweet-group-settings-confirmed").addClass("d-none")
@@ -165,26 +250,28 @@ $(document).on('click', ".set-tweet-group", function(){
 })
 
 var card_template = '<div class="card my-1 shadow-sm">' +
-            '<div class="tweet-id d-none"></div>' +
-            '<div class="tweet-subid d-none"></div>' +
-            '<div class="card-header text-right">' +
-                '<div class="row">' +
-                    '<div class="px-2 text-left">' +
-                        '<i class="fas fa-edit" style="color: #60a0ff"></i>&nbsp;&nbsp;' +
-                        '<i class="fas fa-retweet text-secondary"></i>' +
-                    '</div>' +
-                    '<div class="px-2 ml-auto">' +
-                        '<i class="far fa-trash-alt text-secondary del-tweet"></i>' +
+                '<div class="tweet-id d-none"></div>' +
+                '<div class="tweet-subid d-none"></div>' +
+                '<div class="rt-flag d-none">0</div>' +
+                '<div class="card-header text-right">' +
+                    '<div class="row">' +
+                        '<div class="px-2 text-left">' +
+                            '<i class="fas fa-edit" style="color: #60a0ff">TW</i> ' +
+                            '<i class="fas fa-retweet text-secondary">RT</i>' +
+                        '</div>' +
+                        '<div class="px-2 ml-auto">' +
+                            '<i class="far fa-trash-alt text-secondary del-tweet"></i>' +
+                        '</div>' +
                     '</div>' +
                 '</div>' +
-            '</div>' +
-            '<div class="card-body">' +
-                '<p class="card-text text-dark" contenteditable="true"></p>' +
-                '<div class="text-right">' +
-                    '<i class="fas fa-arrow-circle-up text-secondary save-tweet"></i>' +
+                '<div class="card-body">' +
+                    '<textarea class="card-text text-dark tweet-text" style="border: 0px; width: 100%"></textarea>' +
+                    '<textarea class="card-text text-dark org-tweet-id d-none" style="border: 0px; width: 100%"></textarea>' +
+                    '<div class="text-right">' +
+                        '<i class="fas fa-arrow-circle-up text-secondary save-tweet">Save</i>' +
+                    '</div>' +
                 '</div>' +
-            '</div>' +
-        '</div>'
+            '</div>'
 
 $(document).on('click', ".add-tweet", function(){
 
@@ -201,6 +288,7 @@ $(document).on('click', ".add-tweet", function(){
     /* データ作成 */
     // send: text, gid, subid
     var send_vals = {}
+    send_vals.rt_flag = $(this).prev().find(".rt-flag").html()
     send_vals.gid = $(this).parent().find('.tweet-group-setting-gid').html()
     send_vals.subid = $(this).prev().find(".tweet-subid").html()
     send_vals.text = ''

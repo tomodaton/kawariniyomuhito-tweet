@@ -18,14 +18,14 @@ def twitter_auth():
     twitter = OAuth1Session(config.CONSUMER_KEY, config.CONSUMER_SECRET, config.ACCESS_TOKEN, config.ACCESS_TOKEN_SECRET)
     return twitter
     
-def retweet(tweetId):
+def retweet(twitter, tweetId):
     url = url_retweet_base + "%s.json"%tweetId
     url = url_retweet_base + "%s.json"%tweetId
     res = twitter.post(url)
     print(res)
     return res
     
-def unretweet(tweetId):
+def unretweet(twitter, tweetId):
     url = url_unretweet_base + "%s.json"%tweetId
     res = twitter.post(url)
     print(res)
@@ -57,7 +57,7 @@ def post_tweet(twitter, tweet):
         print("Failed. :  %d" % res.status_code)
     return res
         
-def cancel_tweet(tweetId):
+def cancel_tweet(twitter, tweetId):
     url = url_canceltweet_base + "%s.json"%tweetId
     res = twitter.post(url)
     print(res)
@@ -100,15 +100,15 @@ if __name__ == '__main__':
         elif mode == '4':
             print("削除するツイートのtweet IDを入力してください。")
             tweetId = input('>> ')
-            cancel_tweet(tweetId) 
+            cancel_tweet(twitter, tweetId) 
         elif mode == '5':
             print("リツイートするツイートのtweet IDを入力してください。")
             tweetId = input('>> ')
-            retweet(tweetId) 
+            retweet(twitter, tweetId) 
         elif mode == '6':
             print("リツイートを取り消すツイートのtweet IDを入力してください。")
             tweetId = input('>> ')
-            unretweet(tweetId)
+            unretweet(twitter, tweetId)
         elif mode == '7':
             print("検索キーワードを入力してください。")
             word = input('>> ')
