@@ -23,7 +23,7 @@ def create_tables(cursor):
 
     cursor.execute("CREATE TABLE users (username TEXT PRIMARY KEY, password TEXT)")
     cursor.execute("CREATE TABLE sessions (sessionid TEXT, expire TEXT)")
-    cursor.execute("CREATE TABLE sched_tweets (id INTEGER PRIMARY KEY AUTOINCREMENT, gid INTEGER, subid INTEGER, text TEXT, rt_flag INTEGER, org_tweet_id INTEGER, tweet_id INTEGER, actual_date TEXT, status TEXT)")
+    cursor.execute("CREATE TABLE sched_tweets (id INTEGER PRIMARY KEY AUTOINCREMENT, gid INTEGER, subid INTEGER, text TEXT, rt_flag INTEGER, org_tweet_id INTEGER, org_tweet_text TEXT, actual_date TEXT, status TEXT)")
     cursor.execute("CREATE TABLE sched_tweet_groups (gid INTEGER PRIMARY KEY AUTOINCREMENT,sched_start_date TEXT,interval INT,actual_start_date TEXT,status TEXT)")
     
 def commit(conn):
@@ -123,13 +123,13 @@ def search_tweets_by_gid(cursor, gid):
     return tweets
 
 # Retweet操作(登録更新以外(Delete/Update_status)はTweet操作で実行可能)
-def add_retweet(cursor, gid, subid, org_tweet_id):
+def add_retweet(cursor, gid, subid, org_tweet_id, org_tweet_text):
 
-    result = cursor.execute("INSERT INTO sched_tweets(gid, subid, text, rt_flag, org_tweet_id, tweet_id, actual_date, status) VALUES (?, ?, '', 1, ?, '', '', 'DRAFT')", (gid, subid, org_tweet_id)).lastrowid
+    result = cursor.execute("INSERT INTO sched_tweets(gid, subid, text, rt_flag, org_tweet_id, org_tweet_text, tweet_id, actual_date, status) VALUES (?, ?, '', 1, ?, ?, '', '', 'DRAFT')", (gid, subid, org_tweet_id, org_tweet_text)).lastrowid
     return result
 
-def update_retweet(cursor, id, org_tweet_id):
-    cursor.execute("UPDATE sched_tweets SET org_tweet_id = ? WHERE id = ?", (org_tweet_id, id))
+def update_retweet(cursor, id, org_tweet_id, org_tweet_text):
+    cursor.execute("UPDATE sched_tweets SET org_tweet_id = ?, org_tweet_text = ? WHERE id = ?", (org_tweet_id, org_tweet_text, id))
     cursor.execute("UPDATE sched_tweets SET rt_flag = 1, text = '' WHERE id = ?", (id,))
     return id
 
@@ -255,6 +255,9 @@ if __name__ == '__main__':
             gid = input('gid >>')
             subid = input ('subid >>')
             org_tweet_id = input('Tweet ID to retweet >>')
+            # Retweet対象のtweet本文を取得
+            # org_tweet_text = ""
+            org_tweet_text = 'abcdef'
             add_retweet(cursor, gid, subid, org_tweet_id)
             conn.commit()
         elif mode == '26':

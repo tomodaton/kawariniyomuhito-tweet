@@ -7,6 +7,7 @@ import db_create_tables as db
 import time, datetime
 import config
 import hashlib
+import twitter_client as tc
 
 dbname = './example.db'
 # dbname = './schetweet.db'
@@ -370,15 +371,21 @@ def api_update_tweet():
             id = db.add_tweet(cursor, gid, subid, text)  # return gid
             print("Added new tweet {} with gid {}, subid {}, and text {}".format(id, gid, subid, text))
         elif rt_flag == 1:
-            id = db.add_retweet(cursor, gid, subid, org_tweet_id)
-            print("Added new retweet {} with gid {}, subid {}, and org_tweet_id {}".format(id, gid, subid, org_tweetid))
+            # Retweet対象のtweetのテキストを取得
+            # org_tweet_text = tc.xxxx()
+            org_tweet_text = "abcdef"
+            id = db.add_retweet(cursor, gid, subid, org_tweet_id, org_tweet_text)
+            print("Added new retweet {} with gid {}, subid {}, and org_tweet_id {} ({})".format(id, gid, subid, org_tweet_id, org_tweet_text))
     else:  # 更新
         if rt_flag == 0:
             id = db.update_tweet(cursor, id, text)
             print("Updated the tweet with id {}, and text {}".format(id, text))
         elif rt_flag == 1:
-            id = db.update_retweet(cursor, id, org_tweet_id)
-            print("Updated the retweet with id {}, and org_tweet_id {}".format(id, org_tweet_id))
+            # Retweet対象のtweetのテキストを取得
+            # org_tweet_text = tc.xxxx()
+            org_tweet_text = "abcdef"
+            id = db.update_retweet(cursor, id, org_tweet_id, org_tweet_text)
+            print("Updated the retweet with id {}, and org_tweet_id {}({})".format(id, org_tweet_id, org_tweet_text))
             
     db.commit(conn)
     conn.close()

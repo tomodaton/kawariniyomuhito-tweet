@@ -48,11 +48,11 @@
                     <div class="row">
                         <div class="px-2 text-left">
                             % if tweet['rt_flag'] == 0:
-                            <i class="fas fa-edit" style="color: #60a0ff">TW</i> 
-                            <i class="fas fa-retweet text-secondary">RT</i>
+                            <i class="fas fa-edit" style="color: #60a0ff"></i> 
+                            <i class="fas fa-retweet text-secondary"></i>
                             % else:
-                            <i class="fas fa-edit text-secondary">TW</i> 
-                            <i class="fas fa-retweet" style="color: #60a0ff">RT</i>
+                            <i class="fas fa-edit text-secondary"></i> 
+                            <i class="fas fa-retweet" style="color: #60a0ff"></i>
                             % end
                         </div>
                         <div class="px-2 ml-auto">
@@ -64,12 +64,15 @@
                     % if tweet['rt_flag'] == 0:
                     <textarea class="card-text text-dark tweet-text" style="border: 0px; width: 100%">{{tweet['text']}}</textarea>
                     <textarea class="card-text text-dark org-tweet-id d-none" style="border: 0px; width: 100%">{{tweet['org_tweet_id']}}</textarea>
+                    <textarea class="card-text text-dark org-tweet-text d-none" style="border: 0px; width: 100%"></textarea>
+                    <p class="card-text text-dark org-tweet-text d-none" style="border: 0px; width: 100%">{{tweet['org_tweet_text']}}</p>
                     % else:
                     <textarea class="card-text text-dark tweet-text d-none" style="border: 0px; width: 100%">{{tweet['text']}}</textarea>
-                    <textarea class="card-text text-dark org-tweet-id" style="border: 0px; resize: none; width: 100%">{{tweet['org_tweet_id']}}</textarea>
+                    <textarea class="card-text text-dark org-tweet-id" style="border: 0px; width: 100%">{{tweet['org_tweet_id']}}</textarea>
+                    <p class="card-text text-dark org-tweet-text d-none" style="border: 0px; width: 100%">{{tweet['org_tweet_text']}}</p>
                     % end
                     <div class="text-right">
-                        <i class="fas fa-arrow-circle-up text-secondary save-tweet">Save</i>
+                        <i class="fas fa-arrow-circle-up text-secondary save-tweet"></i>
                     </div>
                 </div>
             </div>

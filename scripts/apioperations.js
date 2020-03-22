@@ -18,7 +18,6 @@ $(document).on('click', ".save-tweet", function(){
         // alert(send_vals.id)
         send_vals.rt_flag = 0
         send_text = $(this).parent().parent().find(".tweet-text").val().replace(/<.*?>/g, '')
-        alert(send_text)
         send_vals.text = send_text
         $(this).parent().parent().parent().find(".tweet-text").val(send_text)
         // send_vals.text = $(this).parent().parent().find(".card-body").find(".card-text").html() // receive: id // alert(send_vals.gid); 
@@ -50,8 +49,9 @@ $(document).on('click', ".save-tweet", function(){
         send_vals.id = $(this).parent().parent().parent().find('.tweet-id').html()
         send_vals.rt_flag = 1
         send_vals.org_tweet_id = $(this).parent().parent().find(".org-tweet-id").val()
-        alert(send_vals.org_tweet_id)
-        // send_vals.text = $(this).parent().parent().find(".card-body").find(".card-text").html() // receive: id // alert(send_vals.gid); 
+        // alert(send_vals.org_tweet_id)
+        // send_vals.text = $(this).parent().parent().find(".card-body").find(".card-text").html()
+        // alert(send_vals.gid); 
         _this = $(this)
         /* データ送信 */
         $.ajax({
@@ -66,7 +66,7 @@ $(document).on('click', ".save-tweet", function(){
             // alert(data['id']);
             _this.removeClass("text-danger")
             _this.addClass("text-secondary")
-
+            // RT対象のTweet本文をtext boxにセット (未実装)
         })
         .fail(function(){
             _this.removeClass("text-secondary")
@@ -256,8 +256,8 @@ var card_template = '<div class="card my-1 shadow-sm">' +
                 '<div class="card-header text-right">' +
                     '<div class="row">' +
                         '<div class="px-2 text-left">' +
-                            '<i class="fas fa-edit" style="color: #60a0ff">TW</i> ' +
-                            '<i class="fas fa-retweet text-secondary">RT</i>' +
+                            '<i class="fas fa-edit" style="color: #60a0ff"></i> ' +
+                            '<i class="fas fa-retweet text-secondary"></i>' +
                         '</div>' +
                         '<div class="px-2 ml-auto">' +
                             '<i class="far fa-trash-alt text-secondary del-tweet"></i>' +
@@ -267,8 +267,9 @@ var card_template = '<div class="card my-1 shadow-sm">' +
                 '<div class="card-body">' +
                     '<textarea class="card-text text-dark tweet-text" style="border: 0px; width: 100%"></textarea>' +
                     '<textarea class="card-text text-dark org-tweet-id d-none" style="border: 0px; width: 100%"></textarea>' +
+                    '<p class="card-text text-dark org-tweet-text d-none" style="border: 0px; width: 100%"></p>' +
                     '<div class="text-right">' +
-                        '<i class="fas fa-arrow-circle-up text-secondary save-tweet">Save</i>' +
+                        '<i class="fas fa-arrow-circle-up text-secondary save-tweet"></i>' +
                     '</div>' +
                 '</div>' +
             '</div>'
@@ -356,7 +357,7 @@ $(document).on('click', ".add-tweet-group", function(){
     .done(function(data){
         gid_l = data['gid']
 
-        // alert(gid_l)
+        // f(gid_l)
         _this.before(tweet_group_template)
         _this.prev().find('.tweet-group-setting-gid').html(gid_l)
     })
