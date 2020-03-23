@@ -68,191 +68,26 @@ def api_universal(uri):
 
     # Session ID認証成功
     if ( sessionid_valid == True ):
-        pass
+        # Session ID認証成功の場合の各API Main処理
+        if uri == 'add_tweet_group.json': # Tweet Group追加API
+            res = kw_apis_main.add_tweet_group(request)
+        elif uri == 'update_tweet_group.json':  # Tweet Group更新API
+            res = kw_apis_main.update_tweet_group(request)
+        elif uri == 'search_tweet_groups_by_date': # Tweet Group 検索(by date, by gid)
+            res = kw_apis_main.search_tweet_groups_by_date(request)
+        elif uri == 'delete_tweet_group.json': # Tweet Group 削除
+            res = kw_apis_main.delete_tweet_group(request)
+        elif uri == 'update_tweet.json': # Tweet追加・更新
+            res = kw_apis_main.update_tweet(request)
+        elif uri == 'search_tweets_by_gid.json': # Tweet検索
+            res = kw_apis_main.search_tweets_by_gid(request)
+        elif uri == 'delete_tweet.json': # Tweet削除
+            res = kw_apis_main.delete_tweet(request)
+        return res
     # Session ID認証失敗
     else:
         return kw_s.generate_api_response_if_auth_failed()
     
-    '''
-        Session ID認証成功の場合の各API Main処理
-    '''
-    
-    # Tweet Group 追加
-    if uri == 'add_tweet_group.json':
-
-        res = kw_apis_main.add_tweet_group(request)
-        return res
-
-    # Tweet Group 更新
-    elif uri == 'update_tweet_group.json':
-        
-        res = kw_apis_main.update_tweet_group(request)
-        return res
-
-    # Tweet Group 検索(by date, by gid)
-    elif uri == 'search_tweet_groups_by_date':
-        print("Content-Type: {}".format(request.get_header))
-        body = request.json
-        print(body)
-
-        date = body["date"]
-
-        conn = db.connect_db(dbname)
-        cursor = db.get_cursor(conn)
-        # cursor.execute("SELECT * FROM sched_tweet_groups")
-        result = db.search_group_by_date(cursor, date)
-        # import pdb; pdb.set_trace()
-
-        conn.close()
-
-        header = {"Content-Type": "application/json"}
-        res = HTTPResponse(status=200, body=json.dumps(result), headers=header)    
-        return res
-
-    # Tweet Group 削除
-    elif uri == 'delete_tweet_group.json':
-
-        body = request.json
-
-        gid = body['gid']
-
-        conn = db.connect_db(dbname)
-        cursor = db.get_cursor(conn)
-        result = db.del_group(cursor, gid)
-        db.commit(conn)    
-        conn.close()
-
-        print("Deleted the tweet group with gid {}".format(result))
-
-        header = {"Content-Type": "application/text"}
-        res = HTTPResponse(status=200, headers=header)    
-        return res
-
-    elif uri == 'update_tweet.json':
-        
-        # Tweet(RT, 画像付TweetもTweetとして取り扱う) 新規登録・更新用API。
-        # ポストされるデータのidの定義の有無で新規または更新を判定。
-        # 新規登録：
-        #   id未定義の場合。rt_flagが必須(0: tweet, 1: RT)
-        #   gid(推奨 default=0), subid(推奨 default=0), text(推奨 default='')、org_tweet_id(推奨 default=0) 。
-        #   idを採番して返す。
-        # 更新：
-        #   id定義の場合。rt_flagが必須(0: tweet, 1: RT)
-        #   tweetの場合、text、retweetの場合、org_tweet_idが推奨（ブランクの場合は空欄または0で更新される）
-        #   gid, subidは無視。
-
-        ## Session ID認証成功の場合のメイン処理
-        req_error = False;
-        body = request.json
-
-        # 入力のチェック
-        try:
-            id = body['id']
-            new_tweet = False;
-        except KeyError:
-            new_tweet = True;    
-
-        # rt_flag (必須)
-        try:
-            rt_flag = int(body['rt_flag'])
-        except KeyError:
-            req_error = True;
-
-
-        if rt_flag == 1:
-            try:
-                org_tweet_id = body['org_tweet_id']
-            except KeyError:
-                org_tweet_id = 0;
-        elif rt_flag == 0:
-            try:
-                text = body['text']
-            except KeyError:
-                text = '';
-
-        conn = db.connect_db(dbname)
-        cursor = db.get_cursor(conn)
-
-        # import pdb; pdb.set_trace()
-
-        if new_tweet == True:  # 新規登録
-            try:
-                gid = body['gid']
-            except KeyError:
-                gid = 0;
-
-            try:
-                subid = body['subid']
-            except KeyError:
-                subid = 0;
-
-            if rt_flag == 0:
-                id = db.add_tweet(cursor, gid, subid, text)  # return gid
-                print("Added new tweet {} with gid {}, subid {}, and text {}".format(id, gid, subid, text))
-            elif rt_flag == 1:
-                # Retweet対象のtweetのテキストを取得
-                # org_tweet_text = tc.xxxx()
-                org_tweet_text = "abcdef"
-                id = db.add_retweet(cursor, gid, subid, org_tweet_id, org_tweet_text)
-                print("Added new retweet {} with gid {}, subid {}, and org_tweet_id {} ({})".format(id, gid, subid, org_tweet_id, org_tweet_text))
-        else:  # 更新
-            if rt_flag == 0:
-                id = db.update_tweet(cursor, id, text)
-                print("Updated the tweet with id {}, and text {}".format(id, text))
-            elif rt_flag == 1:
-                # Retweet対象のtweetのテキストを取得
-                # org_tweet_text = tc.xxxx()
-                org_tweet_text = "abcdef"
-                id = db.update_retweet(cursor, id, org_tweet_id, org_tweet_text)
-                print("Updated the retweet with id {}, and org_tweet_id {}({})".format(id, org_tweet_id, org_tweet_text))
-
-        db.commit(conn)
-        conn.close()
-
-        header = {"Content-Type": "application/json"}
-        res = HTTPResponse(status=200, body=json.dumps({'id': id}), headers=header)    
-        return res
-    
-    elif uri == 'search_tweets_by_gid.json':
-
-        print("Content-Type: {}".format(request.get_header))
-        body = request.json
-        print(body)
-
-        gid = body["gid"]
-
-        conn = db.connect_db(dbname)
-        cursor = db.get_cursor(conn)
-        # cursor.execute("SELECT * FROM sched_tweet_groups")
-        result = db.search_tweets_by_gid(cursor, gid)
-        import pdb; pdb.set_trace()
-
-        conn.close()
-
-        print("Search tweets with gid {}.".format(gid))
-
-        header = {"Content-Type": "application/json"}
-        res = HTTPResponse(status=200, body=json.dumps(result), headers=header)    
-        return res
-    
-    elif uri == 'delete_tweet.json':
-
-        body = request.json
-
-        id = body['id']
-
-        conn = db.connect_db(dbname)
-        cursor = db.get_cursor(conn)
-        db.del_tweet(cursor, id)
-        db.commit(conn)
-        conn.close()
-
-        print("Deleted the tweet with id {}".format(id))
-
-        header = {"Content-Type": "application/json"}
-        res = HTTPResponse(status=200, body=json.dumps({'id': id}), headers=header)    
-        return res
-
 @route('/scripts/<name>')
 def scripts(name):
 
@@ -261,14 +96,10 @@ def scripts(name):
 
     # Session ID認証成功
     if ( sessionid_valid == True ):
-        pass
+        return template('scripts/' + name)
     # Session ID認証失敗
     else:
-        return kw_util.generate_api_response_if_auth_failed()
-
-
-    ## Session ID認証成功の場合のメイン処理
-    return template('scripts/' + name)
+        return kw_util.generate_api_response_if_auth_failed()    
 
 @route('/fonts/<name>')
 def scripts(name):
@@ -278,14 +109,10 @@ def scripts(name):
 
     # Session ID認証成功
     if ( sessionid_valid == True ):
-        pass
+        return template('fonts/' + name)
     # Session ID認証失敗
     else:
         return kw_util.generate_api_response_if_auth_failed()
-
-
-    ## Session ID認証成功の場合のメイン処理
-    return template('fonts/' + name)
 
     
 if __name__ == '__main__':
