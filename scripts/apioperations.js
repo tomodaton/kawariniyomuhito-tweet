@@ -66,7 +66,9 @@ $(document).on('click', ".save-tweet", function(){
             // alert(data['id']);
             _this.removeClass("text-danger")
             _this.addClass("text-secondary")
-            // RT対象のTweet本文をtext boxにセット (未実装)
+            _this.parent().parent().find('.org-tweet-text').removeClass('d-none')
+            _this.parent().parent().find('.org-tweet-text').addClass('d-block')
+            _this.parent().parent().find('.org-tweet-text').html(data['org_tweet_text'])
         })
         .fail(function(){
             _this.removeClass("text-secondary")

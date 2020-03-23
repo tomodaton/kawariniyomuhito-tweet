@@ -137,8 +137,13 @@ def update_tweet(request):
             print("Added new tweet {} with gid {}, subid {}, and text {}".format(id, gid, subid, text))
         elif rt_flag == 1:
             # Retweet対象のtweetのテキストを取得
-            # org_tweet_text = tc.xxxx()
-            org_tweet_text = "abcdef"
+            twitter = tc.twitter_auth()
+            res = tc.get_tweet(twitter, org_tweet_id)
+            org_tweet_text = 'Blank'
+            if res.status_code == 200:
+                tweet = json.loads(res.text)
+                org_tweet_text = tweet['text'] + ' by ' + tweet['user']['name'] + ' at ' + tweet['created_at']
+
             id = db.add_retweet(cursor, gid, subid, org_tweet_id, org_tweet_text)
             print("Added new retweet {} with gid {}, subid {}, and org_tweet_id {} ({})".format(id, gid, subid, org_tweet_id, org_tweet_text))
     else:  # 更新
@@ -147,8 +152,13 @@ def update_tweet(request):
             print("Updated the tweet with id {}, and text {}".format(id, text))
         elif rt_flag == 1:
             # Retweet対象のtweetのテキストを取得
-            # org_tweet_text = tc.xxxx()
-            org_tweet_text = "abcdef"
+            twitter = tc.twitter_auth()
+            res = tc.get_tweet(twitter, org_tweet_id)
+            org_tweet_text = 'Blank'
+            if res.status_code == 200:
+                tweet = json.loads(res.text)
+                org_tweet_text = tweet['text'] + ' by ' + tweet['user']['name'] + ' at ' + tweet['created_at']
+
             id = db.update_retweet(cursor, id, org_tweet_id, org_tweet_text)
             print("Updated the retweet with id {}, and org_tweet_id {}({})".format(id, org_tweet_id, org_tweet_text))
 
@@ -156,6 +166,9 @@ def update_tweet(request):
     conn.close()
 
     res_body = {'id': id}
+    if rt_flag == 1:
+        res_body['org_tweet_text'] = org_tweet_text
+
     return res_body
 
 

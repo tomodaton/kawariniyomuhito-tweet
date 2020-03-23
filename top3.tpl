@@ -23,7 +23,7 @@
     <div class="col-sm-3 my-2 border-danger">
         <h4 class="date text-secondary">{{date}}</h4>
       % for group in groups[date]:
-        <div class="my-2">
+        <div class="my-2 tweet-group">
             <h5 class="text-secondary">Tweet Group</h5>
             <div class="p-2 my-1 border outline-secondary  rounded tweet-group-settings d-none shadow-sm">
                 <div class="text-right"><button class="btn btn-sm btn-secondary small set-tweet-group">Set</button></div>
@@ -69,7 +69,7 @@
                     % else:
                     <textarea class="card-text text-dark tweet-text d-none" style="border: 0px; width: 100%">{{tweet['text']}}</textarea>
                     <textarea class="card-text text-dark org-tweet-id" style="border: 0px; width: 100%">{{tweet['org_tweet_id']}}</textarea>
-                    <p class="card-text text-dark org-tweet-text d-none" style="border: 0px; width: 100%">{{tweet['org_tweet_text']}}</p>
+                    <p class="card-text text-dark org-tweet-text" style="border: 0px; width: 100%">{{tweet['org_tweet_text']}}</p>
                     % end
                     <div class="text-right">
                         <i class="fas fa-arrow-circle-up text-secondary save-tweet"></i>

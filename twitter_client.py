@@ -13,6 +13,7 @@ url_retweet_base = "https://api.twitter.com/1.1/statuses/retweet/"
 url_unretweet_base = "https://api.twitter.com/1.1/statuses/unretweet/"
 url_search = "https://api.twitter.com/1.1/search/tweets.json"
 
+url_get_status_base = "https://api.twitter.com/1.1/statuses/show.json?id="
 
 def twitter_auth():
     twitter = OAuth1Session(config.CONSUMER_KEY, config.CONSUMER_SECRET, config.ACCESS_TOKEN, config.ACCESS_TOKEN_SECRET)
@@ -38,11 +39,25 @@ def print_tl(res):
             print(tweet['user']['name']+'::'+tweet['text'])
             print(tweet['created_at'])
             print(tweet['id'])
-            print('************************************************************************************************************************')
+        print('************************************************************************************************************************')
 
     else: # 異常
         print("Failed: %d" % res.status_code)
 
+def print_tweet(res):
+    if res.status_code == 200: # 正常
+        tweet = json.loads(res.text)
+        print('************')
+        print(tweet['user']['name']+'::'+tweet['text'])
+        print(tweet['created_at'])
+        print(tweet['id'])
+        print('**************')
+
+def get_tweet(twitter, tweetId):
+    res = twitter.get(url_get_status_base + tweetId)
+    return res
+    
+    
 def post_tweet(twitter, tweet):
     params = {"status": tweet}
 
@@ -83,7 +98,7 @@ if __name__ == '__main__':
     while 1:
         print()
         print()
-        mode = input('Home: 1, My tweets: 2, Tweet: 3, Cancel Tweet: 4, Retweet: 5, UnRetweet: 6, Search: 7, Exit: 9>> ')
+        mode = input('Home: 1, My tweets: 2, Get status (tweet id?): 21, Tweet: 3, Cancel Tweet: 4, Retweet: 5, UnRetweet: 6, Search: 7, Exit: 9>> ')
         print(mode)
 
         if mode == '1':
@@ -93,6 +108,10 @@ if __name__ == '__main__':
         elif mode == '2':
             res = twitter.get(url_tl)
             print_tl(res)
+        elif mode == '21':
+            tweetID = input('>> ')
+            res = get_tweet(twitter, tweetID)
+            print_tweet(res)
         elif mode == '3':
             print("ツイート内容を入力してください。")
             tweet = input('>> ')
