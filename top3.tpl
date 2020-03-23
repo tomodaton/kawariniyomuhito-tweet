@@ -33,7 +33,7 @@
                 <select class="form-control form-control-sm my-1 tweet-group-status"><option>DRAFT</option><option>SCHEDULED</option></select>
             </div>
             <div class="p-2 my-1 small border outline-secondary rounded tweet-group-settings-confirmed d-block shadow-sm">
-                <div class="text-right"><button class="btn btn-sm btn-outline-secondary small edit-tweet-group">Edit</button></div>
+                <div class="text-right"><button class="btn btn-sm btn-outline-secondary small edit-tweet-group">Edit</button> <button class="btn btn-sm btn-outline-secondary small delete-tweet-group">Del</button></div>
                 <div class="tweet-group-setting-gid d-none">{{group['gid']}}</div>
                 <div class="mb-1">Start: <span class="sched-start-time">{{datetime.datetime.strptime(group['sched_start_date'],'%Y-%m-%d %H:%M:%S').strftime('%H:%M:%S')}}</span></div>
                 <div class="my-1">Interval(sec): <span class="tweet-group-interval">{{group['interval']}}</span></div>

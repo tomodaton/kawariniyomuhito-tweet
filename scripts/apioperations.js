@@ -249,6 +249,34 @@ $(document).on('click', ".set-tweet-group", function(){
     })    
 })
 
+
+$(document).on('click', ".delete-tweet-group", function(){
+
+    /* データ送信 */
+    var send_vals = {}
+    gid_l = $(this).parent().parent().parent().find('.tweet-group-setting-gid').html()
+    send_vals.gid = gid_l
+
+    alert(gid_l)
+    _this =$(this)
+
+    $.ajax({
+      url:'api/1.0/delete_tweet_group.json',
+      type:'POST',
+      contentType: 'application/JSON',
+      data: JSON.stringify(send_vals),
+      timeout: 10000,
+      datatype: 'json'
+    })
+    .done(function(data){
+        _this.parent().parent().parent().remove()
+    })
+    .fail(function(){
+        alert("Failed.")
+    })
+})
+
+
 var card_template = '<div class="card my-1 shadow-sm">' +
                 '<div class="tweet-id d-none"></div>' +
                 '<div class="tweet-subid d-none"></div>' +
@@ -317,7 +345,7 @@ $(document).on('click', ".add-tweet", function(){
     })
 })
 
-var tweet_group_template = '<div class="my-2">' +
+var tweet_group_template = '<div class="my-2 tweet-group">' +
         '<h5 class="text-secondary">Tweet Group</h5>' +
         '<div class="p-2 my-1 border outline-secondary  rounded tweet-group-settings d-none shadow-sm">' +
             '<div class="text-right"><button class="btn btn-sm btn-secondary small set-tweet-group">Set</button></div>' +
@@ -327,7 +355,7 @@ var tweet_group_template = '<div class="my-2">' +
             '<select class="form-control form-control-sm my-1 tweet-group-status"><option selected>DRAFT</option><option>SCHEDULED</option></select>' +
         '</div>' +
         '<div class="p-2 my-1 small border outline-secondary rounded tweet-group-settings-confirmed d-block shadow-sm">' +
-            '<div class="text-right"><button class="btn btn-sm btn-secondary small edit-tweet-group">Edit</button></div>' +
+            '<div class="text-right"><button class="btn btn-sm btn-secondary small edit-tweet-group">Edit</button> <button class="btn btn-sm btn-secondary small delete-tweet-group">Del</button> </div>' +
     '<div class="tweet-group-setting-gid d-none"></div>' +
             '<div class="mb-1">Start: <span class="sched-start-time">00:00:00</span></div>' +
             '<div class="my-1">Interval(sec): <span class="tweet-group-interval">60</span></div>' +
@@ -357,7 +385,6 @@ $(document).on('click', ".add-tweet-group", function(){
     .done(function(data){
         gid_l = data['gid']
 
-        // f(gid_l)
         _this.before(tweet_group_template)
         _this.prev().find('.tweet-group-setting-gid').html(gid_l)
     })

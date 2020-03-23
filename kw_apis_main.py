@@ -74,7 +74,7 @@ def delete_tweet_group(request):
 
     print("Deleted the tweet group with gid {}".format(result))
 
-    res_body = result
+    res_body = {'gid': result }
     return res_body
 
 def update_tweet(request):
