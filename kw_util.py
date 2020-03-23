@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from bottle import HTTPResponse
 import time, datetime
+import json
 
 
 # 文字列(YYYY-MM-DD)で表される開始日付 from_date, 終了日付 to_dateから期間の日付リストを生成
@@ -35,4 +36,10 @@ def generate_response_if_auth_failed():
 def generate_api_response_if_auth_failed():
     header = {"Content-Type": "application/text"}
     res = HTTPResponse(status=302, headers=header)
+    return res
+
+def generate_api_response(res_body):
+    header = {"Content-Type": "application/json"}
+    res = HTTPResponse(status=200, body=json.dumps(res_body), headers=header)
+
     return res

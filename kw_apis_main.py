@@ -1,12 +1,13 @@
 # -*- coding:utf-8 -*-
 from bottle import request, HTTPResponse
 import json
+import twitter_client as tc
 import db_create_tables as db
 import kw_apis_main
 
+
 dbname = './example.db'
 # dbname = './schetweet.db'
-
 
 def add_tweet_group(request):
     body = request.json
@@ -20,11 +21,8 @@ def add_tweet_group(request):
     db.commit(conn)    
     conn.close()
 
-    print("Added new tweet group with gid {}".format(result))
-
-    header = {"Content-Type": "application/json"}
-    res = HTTPResponse(status=200, body=json.dumps({'gid': result}), headers=header)    
-    return res
+    res_body = {'gid': result}
+    return res_body
 
 def update_tweet_group(request):
     print("Content-Type: {}".format(request.get_header))
@@ -42,9 +40,8 @@ def update_tweet_group(request):
     conn.close()
     print("Updated the tweet group with gid: {}, sched_start_date: {}, interval: {}, status: {}".format(gid, sched_start_date, interval, status))
 
-    header = {"Content-Type": "application/text"}
-    res = HTTPResponse(status=200, headers=header)    
-    return res
+    res_body = {}
+    return res_body
 
 def search_tweet_groups_by_date(request):
 
@@ -58,13 +55,10 @@ def search_tweet_groups_by_date(request):
     cursor = db.get_cursor(conn)
     # cursor.execute("SELECT * FROM sched_tweet_groups")
     result = db.search_group_by_date(cursor, date)
-    # import pdb; pdb.set_trace()
-
     conn.close()
 
-    header = {"Content-Type": "application/json"}
-    res = HTTPResponse(status=200, body=json.dumps(result), headers=header)    
-    return res
+    res_body = result
+    return res_body
 
 def delete_tweet_group(request):
 
@@ -80,9 +74,8 @@ def delete_tweet_group(request):
 
     print("Deleted the tweet group with gid {}".format(result))
 
-    header = {"Content-Type": "application/text"}
-    res = HTTPResponse(status=200, headers=header)    
-    return res
+    res_body = result
+    return res_body
 
 def update_tweet(request):
     # Tweet(RT, 画像付TweetもTweetとして取り扱う) 新規登録・更新用API。
@@ -105,7 +98,7 @@ def update_tweet(request):
         id = body['id']
         new_tweet = False;
     except KeyError:
-        new_tweet = True;    
+        new_tweet = True;
 
     # rt_flag (必須)
     try:
@@ -127,8 +120,6 @@ def update_tweet(request):
 
     conn = db.connect_db(dbname)
     cursor = db.get_cursor(conn)
-
-    # import pdb; pdb.set_trace()
 
     if new_tweet == True:  # 新規登録
         try:
@@ -164,9 +155,8 @@ def update_tweet(request):
     db.commit(conn)
     conn.close()
 
-    header = {"Content-Type": "application/json"}
-    res = HTTPResponse(status=200, body=json.dumps({'id': id}), headers=header)    
-    return res
+    res_body = {'id': id}
+    return res_body
 
 
 def search_tweets_by_gid(request):
@@ -181,15 +171,13 @@ def search_tweets_by_gid(request):
     cursor = db.get_cursor(conn)
     # cursor.execute("SELECT * FROM sched_tweet_groups")
     result = db.search_tweets_by_gid(cursor, gid)
-    import pdb; pdb.set_trace()
 
     conn.close()
 
     print("Search tweets with gid {}.".format(gid))
 
-    header = {"Content-Type": "application/json"}
-    res = HTTPResponse(status=200, body=json.dumps(result), headers=header)    
-    return res
+    res_body = result
+    return res_body
 
 
 def delete_tweet(request):
@@ -206,6 +194,5 @@ def delete_tweet(request):
 
     print("Deleted the tweet with id {}".format(id))
 
-    header = {"Content-Type": "application/json"}
-    res = HTTPResponse(status=200, body=json.dumps({'id': id}), headers=header)    
-    return res
+    res_body = {'id': id}
+    return res_body

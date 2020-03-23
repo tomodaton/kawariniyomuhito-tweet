@@ -70,23 +70,25 @@ def api_universal(uri):
     if ( sessionid_valid == True ):
         # Session ID認証成功の場合の各API Main処理
         if uri == 'add_tweet_group.json': # Tweet Group追加API
-            res = kw_apis_main.add_tweet_group(request)
+            res_body = kw_apis_main.add_tweet_group(request)
         elif uri == 'update_tweet_group.json':  # Tweet Group更新API
-            res = kw_apis_main.update_tweet_group(request)
+            res_body = kw_apis_main.update_tweet_group(request)
         elif uri == 'search_tweet_groups_by_date': # Tweet Group 検索(by date, by gid)
-            res = kw_apis_main.search_tweet_groups_by_date(request)
+            res_body = kw_apis_main.search_tweet_groups_by_date(request)
         elif uri == 'delete_tweet_group.json': # Tweet Group 削除
-            res = kw_apis_main.delete_tweet_group(request)
+            res_body = kw_apis_main.delete_tweet_group(request)
         elif uri == 'update_tweet.json': # Tweet追加・更新
-            res = kw_apis_main.update_tweet(request)
+            res_body = kw_apis_main.update_tweet(request)
         elif uri == 'search_tweets_by_gid.json': # Tweet検索
-            res = kw_apis_main.search_tweets_by_gid(request)
+            res_body = kw_apis_main.search_tweets_by_gid(request)
         elif uri == 'delete_tweet.json': # Tweet削除
-            res = kw_apis_main.delete_tweet(request)
-        return res
+            res_body = kw_apis_main.delete_tweet(request)
+        # Response
+        return kw_util.generate_api_response(res_body)
+
     # Session ID認証失敗
     else:
-        return kw_s.generate_api_response_if_auth_failed()
+        return kw_util.generate_api_response_if_auth_failed()
     
 @route('/scripts/<name>')
 def scripts(name):
