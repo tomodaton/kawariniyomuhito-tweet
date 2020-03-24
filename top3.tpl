@@ -69,7 +69,7 @@
                     % else:
                     <textarea class="card-text text-dark tweet-text d-none" style="border: 0px; width: 100%">{{tweet['text']}}</textarea>
                     <textarea class="card-text text-dark org-tweet-id" style="border: 0px; width: 100%">{{tweet['org_tweet_id']}}</textarea>
-                    <p class="card-text text-dark org-tweet-text" style="border: 0px; width: 100%">{{tweet['org_tweet_text']}}</p>
+                    <p class="card-text text-dark org-tweet-text small border rounded p-1 bg-light" style="border: 0px; width: 100%">{{tweet['org_tweet_text']}}</p>
                     % end
                     <div class="text-right">
                         <i class="fas fa-arrow-circle-up text-secondary save-tweet"></i>

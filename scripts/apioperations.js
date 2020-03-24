@@ -48,8 +48,9 @@ $(document).on('click', ".save-tweet", function(){
         var send_vals = {}
         send_vals.id = $(this).parent().parent().parent().find('.tweet-id').html()
         send_vals.rt_flag = 1
-        send_vals.org_tweet_id = $(this).parent().parent().find(".org-tweet-id").val()
-        // alert(send_vals.org_tweet_id)
+        send_vals.org_tweet_id = $(this).parent().parent().find(".org-tweet-id").val().replace(/^http.*\/([0-9]*).*/,'$1').replace(/([0-9]*).*/, '$1')
+        alert(send_vals.org_tweet_id)
+        $(this).parent().parent().find(".org-tweet-id").val(send_vals.org_tweet_id)
         // send_vals.text = $(this).parent().parent().find(".card-body").find(".card-text").html()
         // alert(send_vals.gid); 
         _this = $(this)
@@ -153,6 +154,8 @@ $(document).on('click', ".fa-edit", function(){
     $(this).parent().parent().parent().parent().find(".tweet-text").removeClass("d-none")
     $(this).parent().parent().parent().parent().find(".org-tweet-id").addClass("d-none")
     $(this).parent().parent().parent().parent().find(".org-tweet-id").removeClass("d-block")
+    $(this).parent().parent().parent().parent().find(".org-tweet-text").addClass("d-none")
+    $(this).parent().parent().parent().parent().find(".org-tweet-text").removeClass("d-block")
 
     /* Tweet(edit)ボタンとRetweetボタンのトグル */
     $(this).parent().find(".fa-retweet").removeClass("text-primary")
@@ -170,6 +173,8 @@ $(document).on('click', ".fa-retweet", function(){
     $(this).parent().parent().parent().parent().find(".org-tweet-id").removeClass("d-none")
     $(this).parent().parent().parent().parent().find(".tweet-text").addClass("d-none")
     $(this).parent().parent().parent().parent().find(".tweet-text").removeClass("d-block")
+    $(this).parent().parent().parent().parent().find(".org-tweet-text").addClass("d-block")
+    $(this).parent().parent().parent().parent().find(".org-tweet-text").removeClass("d-none")
 
     /* Tweet(edit)ボタンとRetweetボタンのトグル */
     $(this).parent().find(".fa-edit").removeClass("text-primary")
@@ -297,7 +302,7 @@ var card_template = '<div class="card my-1 shadow-sm">' +
                 '<div class="card-body">' +
                     '<textarea class="card-text text-dark tweet-text" style="border: 0px; width: 100%"></textarea>' +
                     '<textarea class="card-text text-dark org-tweet-id d-none" style="border: 0px; width: 100%"></textarea>' +
-                    '<p class="card-text text-dark org-tweet-text d-none" style="border: 0px; width: 100%"></p>' +
+                    '<p class="card-text text-dark org-tweet-text d-none small border rounded p-1 bg-light" style="border: 0px; width: 100%"></p>' +
                     '<div class="text-right">' +
                         '<i class="fas fa-arrow-circle-up text-secondary save-tweet"></i>' +
                     '</div>' +

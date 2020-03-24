@@ -158,7 +158,6 @@ def update_tweet(request):
             if res.status_code == 200:
                 tweet = json.loads(res.text)
                 org_tweet_text = tweet['text'] + ' by ' + tweet['user']['name'] + ' at ' + tweet['created_at']
-
             id = db.update_retweet(cursor, id, org_tweet_id, org_tweet_text)
             print("Updated the retweet with id {}, and org_tweet_id {}({})".format(id, org_tweet_id, org_tweet_text))
 
