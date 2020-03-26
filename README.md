@@ -21,8 +21,11 @@
 ├── db_create_tables.py  DB操作スクリプト  
 ├── exec.sh  アプリ実行スクリプト  
 ├── favicon.ico  
-├── index.py  アプリ本体  
-├── index.tpl  アプリテンプレート(index.html用)  
+├── index.py  アプリ本体
+├── index.tpl  アプリテンプレート(index.html用)
+├── kw_apis_main.py　REST APIメイン処理関数群
+├── kw_sessions.py　Session管理用関数群
+├── kw_util.py　レスポンス生成関連関数群
 ├── sched_tweet.py  予約投稿スクリプト(CRON用)  
 ├── scripts  
 │   └── apioperations.js  top.html用Javascript  
