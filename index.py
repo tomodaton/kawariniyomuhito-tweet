@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from bottle import route, run, request, response, HTTPResponse, default_app
+from bottle import route, run, request, response, HTTPResponse, default_app, static_file
 from bottle import template
 import json
 import sqlite3
@@ -89,19 +89,6 @@ def api_universal(uri):
     # Session ID認証失敗
     else:
         return kw_util.generate_api_response_if_auth_failed()
-    
-@route('/scripts/<name>')
-def scripts(name):
-
-    # Session ID認証
-    sessionid_valid = kw_s.authorize_sessionid(request)
-
-    # Session ID認証成功
-    if ( sessionid_valid == True ):
-        return template('scripts/' + name)
-    # Session ID認証失敗
-    else:
-        return kw_util.generate_api_response_if_auth_failed()    
 
 @route('/fonts/<name>')
 def scripts(name):
@@ -111,7 +98,7 @@ def scripts(name):
 
     # Session ID認証成功
     if ( sessionid_valid == True ):
-        return template('fonts/' + name)
+        return static_file(name, root='./fonts')
     # Session ID認証失敗
     else:
         return kw_util.generate_api_response_if_auth_failed()

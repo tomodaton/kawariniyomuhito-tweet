@@ -77,6 +77,16 @@ def delete_tweet_group(request):
     res_body = {'gid': result }
     return res_body
 
+def get_formatted_org_tweet_text(org_tweet_id):
+    twitter = tc.twitter_auth()
+    res = tc.get_tweet(twitter, org_tweet_id)
+    org_tweet_text = 'Blank'
+    if res.status_code == 200:
+        tweet = json.loads(res.text)
+        org_tweet_text = tweet['text'] + ' by ' + tweet['user']['name'] + ' at ' + tweet['created_at']
+    return org_tweet_text
+
+    
 def update_tweet(request):
     # Tweet(RT, 画像付TweetもTweetとして取り扱う) 新規登録・更新用API。
     # ポストされるデータのidの定義の有無で新規または更新を判定。
@@ -104,8 +114,7 @@ def update_tweet(request):
     try:
         rt_flag = int(body['rt_flag'])
     except KeyError:
-        req_error = True;
-
+        rt_flag = 0;
 
     if rt_flag == 1:
         try:
@@ -137,13 +146,7 @@ def update_tweet(request):
             print("Added new tweet {} with gid {}, subid {}, and text {}".format(id, gid, subid, text))
         elif rt_flag == 1:
             # Retweet対象のtweetのテキストを取得
-            twitter = tc.twitter_auth()
-            res = tc.get_tweet(twitter, org_tweet_id)
-            org_tweet_text = 'Blank'
-            if res.status_code == 200:
-                tweet = json.loads(res.text)
-                org_tweet_text = tweet['text'] + ' by ' + tweet['user']['name'] + ' at ' + tweet['created_at']
-
+            org_tweet_text = get_formatted_org_tweet_text(org_tweet_id)
             id = db.add_retweet(cursor, gid, subid, org_tweet_id, org_tweet_text)
             print("Added new retweet {} with gid {}, subid {}, and org_tweet_id {} ({})".format(id, gid, subid, org_tweet_id, org_tweet_text))
     else:  # 更新
@@ -152,12 +155,7 @@ def update_tweet(request):
             print("Updated the tweet with id {}, and text {}".format(id, text))
         elif rt_flag == 1:
             # Retweet対象のtweetのテキストを取得
-            twitter = tc.twitter_auth()
-            res = tc.get_tweet(twitter, org_tweet_id)
-            org_tweet_text = 'Blank'
-            if res.status_code == 200:
-                tweet = json.loads(res.text)
-                org_tweet_text = tweet['text'] + ' by ' + tweet['user']['name'] + ' at ' + tweet['created_at']
+            org_tweet_text = get_formatted_org_tweet_text(org_tweet_id)
             id = db.update_retweet(cursor, id, org_tweet_id, org_tweet_text)
             print("Updated the retweet with id {}, and org_tweet_id {}({})".format(id, org_tweet_id, org_tweet_text))
 
