@@ -90,7 +90,7 @@ def api_universal(uri):
     else:
         return kw_util.generate_api_response_if_auth_failed()
 
-@route('/fonts/<name>')
+@route('/scripts/<name>')
 def scripts(name):
 
     # Session ID認証
@@ -98,7 +98,7 @@ def scripts(name):
 
     # Session ID認証成功
     if ( sessionid_valid == True ):
-        return static_file(name, root='./fonts')
+        return static_file(name, root='./scripts')
     # Session ID認証失敗
     else:
         return kw_util.generate_api_response_if_auth_failed()
