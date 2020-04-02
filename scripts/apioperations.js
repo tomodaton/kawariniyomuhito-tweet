@@ -64,12 +64,13 @@ $(document).on('click', ".save-tweet", function(){
           datatype: 'json'
         })
         .done(function(data){
-            // alert(data['id']);
             _this.removeClass("text-danger")
             _this.addClass("text-secondary")
             _this.parent().parent().find('.org-tweet-text').removeClass('d-none')
             _this.parent().parent().find('.org-tweet-text').addClass('d-block')
             _this.parent().parent().find('.org-tweet-text').html(data['org_tweet_text'])
+            _this.parent().parent().find('.org-tweet-id').removeClass('d-block')
+            _this.parent().parent().find('.org-tweet-id').addClass('d-none')
         })
         .fail(function(){
             _this.removeClass("text-secondary")
@@ -173,8 +174,8 @@ $(document).on('click', ".fa-retweet", function(){
     $(this).parent().parent().parent().parent().find(".org-tweet-id").removeClass("d-none")
     $(this).parent().parent().parent().parent().find(".tweet-text").addClass("d-none")
     $(this).parent().parent().parent().parent().find(".tweet-text").removeClass("d-block")
-    $(this).parent().parent().parent().parent().find(".org-tweet-text").addClass("d-block")
-    $(this).parent().parent().parent().parent().find(".org-tweet-text").removeClass("d-none")
+    // $(this).parent().parent().parent().parent().find(".org-tweet-text").addClass("d-block")
+    // $(this).parent().parent().parent().parent().find(".org-tweet-text").removeClass("d-none")
 
     /* Tweet(edit)ボタンとRetweetボタンのトグル */
     $(this).parent().find(".fa-edit").removeClass("text-primary")
@@ -184,6 +185,14 @@ $(document).on('click', ".fa-retweet", function(){
     $(this).css("color", "#60a0ff")
 })
 
+
+$(document).on('click', ".org-tweet-text", function(){
+    $(this).parent().find(".org-tweet-id").removeClass("d-none")
+    $(this).parent().find(".org-tweet-id").addClass("d-block")
+    $(this).removeClass("d-block")
+    $(this).addClass("d-none")
+})
+               
 
 $(document).on('click', ".edit-tweet-group", function(){
     /* 設定編集モードのトグル（開始） */
@@ -300,8 +309,8 @@ var card_template = '<div class="card my-1 shadow-sm">' +
                     '</div>' +
                 '</div>' +
                 '<div class="card-body">' +
-                    '<textarea class="card-text text-dark tweet-text" style="border: 0px; width: 100%"></textarea>' +
-                    '<textarea class="card-text text-dark org-tweet-id d-none" style="border: 0px; width: 100%"></textarea>' +
+                    '<textarea class="card-text text-dark tweet-text" placeholder="Input Your Tweet" style="border: 0px; width: 100%"></textarea>' +
+                    '<textarea class="card-text text-dark org-tweet-id d-none"  placeholder="Input Link to tweet" style="border: 0px; width: 100%"></textarea>' +
                     '<p class="card-text text-dark org-tweet-text d-none small border rounded p-1 bg-light" style="border: 0px; width: 100%"></p>' +
                     '<div class="text-right">' +
                         '<i class="fas fa-arrow-circle-up text-secondary save-tweet"></i>' +
