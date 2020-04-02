@@ -64,10 +64,11 @@
                     % if tweet['rt_flag'] == 0:
                     <textarea class="card-text text-dark tweet-text" placeholder="Input Your Tweet" style="border: 0px; width: 100%">{{tweet['text']}}</textarea>
                     <textarea class="card-text text-dark org-tweet-id d-none"  placeholder="Input Link to tweet" style="border: 0px; width: 100%">{{tweet['org_tweet_id']}}</textarea>
-                    <p class="card-text text-dark org-tweet-text d-none" style="border: 0px; width: 100%">{{tweet['org_tweet_text']}}</p>
+                    <p class="card-text text-dark org-tweet-text d-none small border rounded p-1 bg-light" style="border: 0px; width: 100%">{{tweet['org_tweet_text']}}</p>
                     % else:
                     <textarea class="card-text text-dark tweet-text d-none" placeholder="Input Your Tweet" style="border: 0px; width: 100%">{{tweet['text']}}</textarea>
-                        % if tweet['org_tweet_text'] == '':
+                        % if ( tweet['org_tweet_text'] == '' or tweet['org_tweet_text'] == None ):
+                        <!-- % if ( tweet['org_tweet_text'] == '' ): -->
                         <textarea class="card-text text-dark org-tweet-id d-block" placeholder="Input Link to tweet" style="border: 0px; width: 100%">{{tweet['org_tweet_id']}}</textarea>
                         % else:
                         <textarea class="card-text text-dark org-tweet-id d-none" placeholder="Input Link to tweet" style="border: 0px; width: 100%">{{tweet['org_tweet_id']}}</textarea>
