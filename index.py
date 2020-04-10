@@ -56,8 +56,14 @@ def top():
             tweets[group['gid']] = db.search_tweets_by_gid(cursor, group['gid'])
     print('tweets: '+str(tweets))
     db.close_db(conn)
-            
-    return template('top3.tpl', dates=dates, groups=groups, tweets=tweets)
+    
+    # 3. タイムラインの取得
+    twitter = tc.twitter_auth()
+    # import pdb; pdb.set_trace()
+    timeline = tc.get_timeline(twitter)
+    timeline_tweets = tc.generate_tl(timeline)
+    
+    return template('top3.tpl', dates=dates, groups=groups, tweets=tweets, timeline_tweets=timeline_tweets)
 
 # API
 @route('/api/1.0/<uri>', method=["POST"])
@@ -90,7 +96,7 @@ def api_universal(uri):
     else:
         return kw_util.generate_api_response_if_auth_failed()
 
-@route('/scripts/<name>')
+@route('/scripts/<name:path>')
 def scripts(name):
 
     # Session ID認証
@@ -98,7 +104,7 @@ def scripts(name):
 
     # Session ID認証成功
     if ( sessionid_valid == True ):
-        return static_file(name, root='./scripts')
+        return static_file(name, root='./scripts/')
     # Session ID認証失敗
     else:
         return kw_util.generate_api_response_if_auth_failed()

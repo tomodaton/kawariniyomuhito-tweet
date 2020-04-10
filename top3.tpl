@@ -9,10 +9,19 @@
 </head>
 <body>
 <div class="container">
-<div class="jumbotron jumbotron-fluid text-center px-4" style="background-color: darkblue; color:#FFF;">
+<!-- <div class="jumbotron jumbotron-fluid text-center px-4" style="background-color: darkblue; color:#FFF;"> -->
+<div class="bg-white text-center px-4 py-4">
     <h1>代わりに読む人</h1>
     <p>Tweet Manager v0.0</p>
-    <form class="form-inline justify-content-center" action="./top.html" method="get">
+</div>
+    <ul class="nav nav-tabs justify-content-center">
+        <li class="nav-item"><a href="javascript: toggle_navbar_to_home_timeline()" class="nav-link to-home-timeline active"><i class="fas fa-home"></i> <span class="d-none d-sm-inline">Home</span></a></li>
+        <li class="nav-item"><a href="javascript: toggle_navbar_to_scheduled_tweet()" class="nav-link to-scheduled-tweet"><i class="fas fa-calendar-alt"></i> <span class="d-none d-sm-inline">Scheduled Tweets</span></a></li>
+        <li class="nav-item"><a href="javascript: toggle_navbar_to_help()" class="nav-link to-help"><i class="fas fa-question-circle"></i> <span class="d-none d-sm-inline">Help</span></a></li>
+    </ul>
+<div class="scheduled-tweet d-none">
+<div>
+    <form class="form-inline justify-content-center py-4" action="./top.html" method="get">
         <input type="date" name="from_date" class="form-control" value="{{dates[0]}}" size="10">-<input type="date" class="form-control" name ="to_date" value="{{dates[-1]}}" size="10">
         &nbsp; <button class="btn btn-primary my-2">View</button>
     </form>
@@ -60,7 +69,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-2">
                     % if tweet['rt_flag'] == 0:
                     <textarea class="card-text text-dark tweet-text" placeholder="Input Your Tweet" style="border: 0px; width: 100%">{{tweet['text']}}</textarea>
                     <textarea class="card-text text-dark org-tweet-id d-none"  placeholder="Input Link to tweet" style="border: 0px; width: 100%">{{tweet['org_tweet_id']}}</textarea>
@@ -76,6 +85,7 @@
                     <p class="card-text text-dark org-tweet-text small border rounded p-1 bg-light" style="border: 0px; width: 100%">{{tweet['org_tweet_text']}}</p>
                     % end
                     <div class="text-right">
+                        <span class="cnt-text small"></span>
                         <i class="fas fa-arrow-circle-up text-secondary save-tweet"></i>
                     </div>
                 </div>
@@ -88,9 +98,33 @@
     </div>
 % end
 </div>
+</div>
+<div class="home-timeline d-block py-4">
+    <div class="col-sm-5 border-danger mx-auto px-0">
+        % for tweet in timeline_tweets:
+        <div class="card my-1 mx-0 shadow-sm">
+            <div class="card-header px-2 py-1 small">
+                {{tweet['user']['name']}} // {{tweet['created_at']}}<br>
+            </div>
+            <div class="card-body p-2">
+                {{tweet['text']}}
+            </div>
+            <div class="card-footer px-2 py-1 small">
+                {{tweet['id']}}
+            </div>
+        </div>
+        % end
+    </div>
+</div>  
 <div class="row bg-white"><div class="col-12" style="height: 100px;"></div></div>
 </div>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>    
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src='https://cdn.jsdelivr.net/npm/jquery-autosize@1.18.18/jquery.autosize.js'></script>
+
+<script src='scripts/twitter-text/configs.js' type='module'></script>
+<script src='scripts/twitter-text/parseTweet.js' type='module'></script>
+<script src='scripts/twitter-text/getTweetLength.js'></script>
+
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 <script src="scripts/apioperations.js"></script>

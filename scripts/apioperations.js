@@ -1,3 +1,41 @@
+function toggle_navbar_to_home_timeline(){
+        $('.scheduled-tweet').addClass('d-none')
+        $('.scheduled-tweet').removeClass('d-block')
+        $('.to-scheduled-tweet').removeClass('active')
+        $('.help').addClass('d-none')
+        $('.help').removeClass('d-block')
+        $('.to-help').removeClass('active')
+
+        $('.home-timeline').addClass('d-block')
+        $('.home-timeline').removeClass('d-none')
+        $('.to-home-timeline').addClass('active')
+}
+function toggle_navbar_to_scheduled_tweet(){
+        $('.home-timeline').addClass('d-none')
+        $('.home-timeline').removeClass('d-block')
+        $('.to-home-timeline').removeClass('active')
+        $('.help').addClass('d-none')
+        $('.help').removeClass('d-block')
+        $('.to-help').removeClass('active')
+
+        $('.scheduled-tweet').addClass('d-block')
+        $('.scheduled-tweet').removeClass('d-none')
+        $('.to-scheduled-tweet').addClass('active')
+}       
+function toggle_navbar_to_help(){
+        $('.home-timeline').addClass('d-none')
+        $('.home-timeline').removeClass('d-block')
+        $('.to-home-timeline').removeClass('active')
+        $('.scheduled-tweet').addClass('d-none')
+        $('.scheduled-tweet').removeClass('d-block')
+        $('.to-scheduled-tweet').removeClass('active')
+
+        $('.help').addClass('d-block')
+        $('.help').removeClass('d-none')
+        $('.to-help').addClass('active')
+
+}       
+
 $(document).on('click', ".save-tweet", function(){
     // alert($(this).parent().parent().find(".card-body").find(".card-text").html())
     // $(this).parent().parent().find(".card-body").find(".card-text").removeAttr('contenteditable')
@@ -183,6 +221,18 @@ $(document).on('click', ".fa-retweet", function(){
     $(this).parent().find(".fa-edit").css("color", "");
     $(this).removeClass("text-secondary");
     $(this).css("color", "#60a0ff")
+})
+
+$(".tweet-text").autosize()
+
+$(".tweet-text").each(function(){
+    var cnt = $(this).val().length;
+    $(this).parent().find(".cnt-text").text(cnt)
+})
+
+$(document).on('keydown keyup click', ".tweet-text", function(){
+    var cnt = $(this).val().length;
+    $(this).parent().find(".cnt-text").text(cnt)
 })
 
 

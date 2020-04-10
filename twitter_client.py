@@ -18,7 +18,15 @@ url_get_status_base = "https://api.twitter.com/1.1/statuses/show.json?id="
 def twitter_auth():
     twitter = OAuth1Session(config.CONSUMER_KEY, config.CONSUMER_SECRET, config.ACCESS_TOKEN, config.ACCESS_TOKEN_SECRET)
     return twitter
+
+def get_timeline(twitter):
+    res = twitter.get(url_tl)
+    return res;
     
+def get_home_timeline(twitter):
+    res = twitter.get(url_home)
+    return res;
+
 def retweet(twitter, tweetId):
     url = url_retweet_base + "%s.json"%tweetId
     url = url_retweet_base + "%s.json"%tweetId
@@ -44,6 +52,14 @@ def print_tl(res):
     else: # 異常
         print("Failed: %d" % res.status_code)
 
+def generate_tl(res):
+    if res.status_code == 200: # 正常
+        tweets = json.loads(res.text)
+    else:
+        tweets = []
+        
+    return tweets
+        
 def print_tweet(res):
     if res.status_code == 200: # 正常
         tweet = json.loads(res.text)
@@ -103,10 +119,12 @@ if __name__ == '__main__':
 
         if mode == '1':
             # タイムライン取得
-            res = twitter.get(url_home)
+            # res = twitter.get(url_home)
+            res = get_home_timeline(twitter)
             print_tl(res)
         elif mode == '2':
-            res = twitter.get(url_tl)
+            # res = twitter.get(url_tl)
+            res = get_timeline(twitter)
             print_tl(res)
         elif mode == '21':
             tweetID = input('>> ')
